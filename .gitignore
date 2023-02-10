@@ -102,3 +102,32 @@ dist
 
 # TernJS port file
 .tern-port
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Django stuff:
+*.log
+db.sqlite3
+db.sqlite3-journal
+
+# Minimal Virtualenv
+.venv
+
+# Jetbrains
+.idea
+
+# Minimal NodeJS
+dist
+
+settings/production.py

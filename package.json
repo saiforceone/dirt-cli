@@ -1,0 +1,39 @@
+{
+  "name": "@saiforceone/dirt-cli",
+  "version": "0.0.1",
+  "description": "Official CLI Utility for the D.I.R.T stack",
+  "bin": {
+    "@saiforceone/create-dirt-stack": "bin/create-dirt-stack.js",
+    "create-dirt-stack": "bin/create-dirt-stack.js"
+  },
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/saiforceone/dirt-cli.git"
+  },
+  "keywords": [
+    "cli",
+    "dirt-cli",
+    "Django",
+    "InertiaJs",
+    "React",
+    "Tailwind CSS"
+  ],
+  "type": "module",
+  "author": "SaiForceOne / Sai",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/saiforceone/dirt-cli/issues"
+  },
+  "homepage": "https://github.com/saiforceone/dirt-cli#readme",
+  "dependencies": {
+    "arg": "^5.0.2",
+    "inquirer": "^9.1.4"
+  },
+  "devDependencies": {
+    "prettier": "^2.8.4"
+  }
+}
