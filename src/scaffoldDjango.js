@@ -1,8 +1,17 @@
+/**
+ * scaffoldDjango.js
+ * This is the main file responsible for scaffolding the Django part of the DIRT stack
+ */
 import { exec } from 'child_process';
 import { execaCommand } from 'execa';
+import path from 'path';
 import fs from 'fs';
 import * as constants from 'constants';
 
+/**
+ * @description This function handles the installation of dependencies via Pipenv
+ * @returns {Promise<*>}
+ */
 function installDependencies() {
   console.log('execute install dependencies at: ', new Date().toString());
   return new Promise((resolve, reject) => {
@@ -16,6 +25,13 @@ function installDependencies() {
   });
 }
 
+/**
+ * @description This function is responsible for creating the Django project. For this process to work, we
+ * have to specify which python executable needs to be used as we cannot activate the virtual environment.
+ * @param projectName This refers to the name of the project which is read from the command line
+ * @param pythonExecutable The path to the python executable so that `startproject` can be kicked off
+ * @returns {Promise<*>}
+ */
 function createDjangoProject(projectName, pythonExecutable) {
   console.log('execute create django project at: ', new Date().toString());
   return new Promise((resolve, reject) => {
@@ -40,6 +56,11 @@ function createDjangoProject(projectName, pythonExecutable) {
   });
 }
 
+/**
+ * @description Gets the location of the virtual environment that was created so that
+ * the path to the python executable can be determined.
+ * @returns {Promise<*>}
+ */
 function getVirtualEnvLocation() {
   console.log('execute get venv location at: ', new Date().toString());
   return new Promise((resolve, reject) => {
@@ -53,6 +74,11 @@ function getVirtualEnvLocation() {
   });
 }
 
+/**
+ * @description Main function that kicks off the process for scaffolding the Django application
+ * @param options The options coming in from the CLI (process.argv)
+ * @returns {Promise<*>}
+ */
 export async function scaffoldDjango(options) {
   console.log('preparing to scaffold your django project...');
   console.log('executing scaffoldDjango at ', new Date().toString());
@@ -66,7 +92,7 @@ export async function scaffoldDjango(options) {
   console.log('creating project with name: ', projectName);
 
   // get the current directory and append the projectName
-  const destination = `${process.cwd()}/${projectName}`;
+  const destination = path.join(process.cwd(), projectName);
   try {
     // make the directory if it does not exist
     if (!fs.existsSync(destination)) {
@@ -88,12 +114,20 @@ export async function scaffoldDjango(options) {
   // create virtual environment
   try {
     await execaCommand(`pipenv shell`).stdout.pipe(process.stdout);
+    // Kick off the dependency installation
     const installDepsResults = await installDependencies();
     console.log('install deps results: ', installDepsResults);
+    // Determine environment of the related virtual environment
     const pipenvLocation = await getVirtualEnvLocation();
     console.log('pipenv location: ', pipenvLocation);
-    const pythonExecutable = `${String(pipenvLocation).trim()}/bin/python3`;
+    // build path to the python executable
+    const pythonExecutable = path.join(
+      String(pipenvLocation).trim(),
+      'bin',
+      'python3'
+    );
     console.log('python executable to be used: ', pythonExecutable);
+    // Create the django project or at least attmept to
     const createProjectResult = await createDjangoProject(
       projectName,
       pythonExecutable
