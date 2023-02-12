@@ -1,6 +1,8 @@
 import arg from 'arg';
 import inquirer from 'inquirer';
 
+const { scaffoldDjango } = await import('./scaffoldDjango.js');
+
 function parseArgs(rawArgs) {
   const args = arg(
     {
@@ -39,4 +41,6 @@ export async function cli(args) {
   let options = parseArgs(args);
   options = await promptForMissingOpts(options);
   console.log(options);
+  console.log('Doing things for django...');
+  await scaffoldDjango(options);
 }

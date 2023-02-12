@@ -1,4 +1,4 @@
 #! /usr/bin/env node
 
-import { cli } from '../src/cli.js';
+const { cli } = await import('../src/cli.js');
 cli(process.argv).then();
