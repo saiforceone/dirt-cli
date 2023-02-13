@@ -1,0 +1,19 @@
+{% load static %}
+{% load django_vite %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1"/>
+        <!-- css -->
+        <link rel="stylesheet" href="{% static 'dist/css/app.css' %} "/>
+        <!-- vite hmr -->
+        {% vite_hmr_client %}
+        {% vite_asset 'src/main.jsx' %}
+        <title>D.I.R.T Stack - Django Inertia React Tailwind CSS</title>
+    </head>
+    <body>
+        <!-- inertia -->
+        {% block inertia %}{% endblock %}
+    </body>
+</html>

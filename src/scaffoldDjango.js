@@ -6,7 +6,9 @@ import { exec } from 'child_process';
 import { execaCommand } from 'execa';
 import path from 'path';
 import fs from 'fs';
-import * as constants from 'constants';
+import { access, copyFile, constants } from 'node:fs/promises';
+import copy from 'recursive-copy';
+// import * as constants from 'constants';
 
 /**
  * @description This function handles the installation of dependencies via Pipenv
@@ -75,6 +77,30 @@ function getVirtualEnvLocation() {
 }
 
 /**
+ * @description Copies django template data to the destination directory. Overwrites the original manage.py file
+ * @param destinationBase
+ * @returns {Promise<void>}
+ */
+async function copyDjangoSettings(destinationBase) {
+  try {
+    const currentFileUrl = import.meta.url;
+    const templateBaseDir = path.resolve(
+      new URL(currentFileUrl).pathname,
+      '../../templates/django-templates'
+    );
+
+    await access(destinationBase, constants.W_OK);
+    console.log('template base dir: ', templateBaseDir);
+    const results = await copy(templateBaseDir, destinationBase, {
+      overwrite: true,
+    });
+    console.log('File copy result: ', results);
+  } catch (e) {
+    console.log('Failed to copy files with error: ', e.toString());
+  }
+}
+
+/**
  * @description Main function that kicks off the process for scaffolding the Django application
  * @param options The options coming in from the CLI (process.argv)
  * @returns {Promise<*>}
@@ -127,12 +153,18 @@ export async function scaffoldDjango(options) {
       'python3'
     );
     console.log('python executable to be used: ', pythonExecutable);
-    // Create the django project or at least attmept to
+    // Create the django project or at least attempt to
     const createProjectResult = await createDjangoProject(
       projectName,
       pythonExecutable
     );
     console.log('create project results: ', createProjectResult);
+    // copy settings template
+    console.log('copy django files to project');
+    await copyDjangoSettings(destination);
+    // generate secret key file and update dirt_settings/dev.py
+    // delete generated settings file
+    // copy git ignore
     return true;
   } catch (e) {
     console.log('failed to execute commands with error: ', e.toString());
