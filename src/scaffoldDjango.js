@@ -6,9 +6,11 @@ import { exec } from 'child_process';
 import { execaCommand } from 'execa';
 import path from 'path';
 import fs from 'fs';
-import { access, copyFile, constants } from 'node:fs/promises';
+import { access, appendFile, rename, unlink } from 'node:fs/promises';
+import djangoDependencies from './configs/djangoDependencies.json' assert { type: 'json' };
 import copy from 'recursive-copy';
-// import * as constants from 'constants';
+import { generateSecretKey } from './utils/generateSecretKey.js';
+import * as constants from 'constants';
 
 /**
  * @description This function handles the installation of dependencies via Pipenv
@@ -17,7 +19,11 @@ import copy from 'recursive-copy';
 function installDependencies() {
   console.log('execute install dependencies at: ', new Date().toString());
   return new Promise((resolve, reject) => {
-    const command = 'pipenv install Django==4.1 inertia-django django-vite';
+    // use the dependencies file to build the install string
+    const packageList = Object.keys(djangoDependencies.packages)
+      .map((pkg) => `${pkg}==${djangoDependencies.packages[pkg]}`)
+      .join(' ');
+    const command = `pipenv install ${packageList}`;
     exec(command, (error, stdout, stderr) => {
       if (error) {
         console.warn(error);
@@ -93,10 +99,19 @@ async function copyDjangoSettings(destinationBase) {
     console.log('template base dir: ', templateBaseDir);
     const results = await copy(templateBaseDir, destinationBase, {
       overwrite: true,
+      dot: true,
     });
-    console.log('File copy result: ', results);
+    console.log(`File copy results: ${results.length} files copied.`);
   } catch (e) {
     console.log('Failed to copy files with error: ', e.toString());
+  }
+}
+
+async function writeDevSettings(secretKey, destination) {
+  try {
+    await appendFile(destination, `\nSECRET_KEY = '${secretKey}'`);
+  } catch (e) {
+    console.log('Failed to overwrite settings file with error: ', e.toString());
   }
 }
 
@@ -163,8 +178,25 @@ export async function scaffoldDjango(options) {
     console.log('copy django files to project');
     await copyDjangoSettings(destination);
     // generate secret key file and update dirt_settings/dev.py
+    const secretKey = generateSecretKey();
+    console.log('setting secret key...');
+    const devSettingsPath = path.join(destination, 'dirt_settings', 'dev.py');
+    await writeDevSettings(secretKey, devSettingsPath);
     // delete generated settings file
-    // copy git ignore
+    console.log(
+      "Removing default settings.py file (we won't need it anymore, trust me...)"
+    );
+    const originalSettingsFilePath = path.join(
+      destination,
+      projectName,
+      'settings.py'
+    );
+    await unlink(originalSettingsFilePath);
+    // rename git ignore file
+    const originalIgnorePath = path.join(destination, '.gitignore.template');
+    const newIgnorePath = path.join(destination, '.gitignore');
+    console.log('renaming ignore file...');
+    await rename(originalIgnorePath, newIgnorePath);
     return true;
   } catch (e) {
     console.log('failed to execute commands with error: ', e.toString());

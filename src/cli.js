@@ -42,5 +42,6 @@ export async function cli(args) {
   options = await promptForMissingOpts(options);
   console.log(options);
   console.log('Doing things for django...');
-  await scaffoldDjango(options);
+  const djangoResult = await scaffoldDjango(options);
+  console.log(`Django setup status: ${djangoResult ? 'Successful' : 'Failed'}`);
 }
