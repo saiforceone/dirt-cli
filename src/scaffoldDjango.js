@@ -2,14 +2,14 @@
  * scaffoldDjango.js
  * This is the main file responsible for scaffolding the Django part of the DIRT stack
  */
-import { exec } from 'child_process';
-import { execaCommand } from 'execa';
+import {exec} from 'child_process';
+import {execaCommand} from 'execa';
 import path from 'path';
 import fs from 'fs';
-import { access, appendFile, rename, unlink } from 'node:fs/promises';
-import djangoDependencies from './configs/djangoDependencies.json' assert { type: 'json' };
+import {access, appendFile, chmod, rename, unlink} from 'node:fs/promises';
+import djangoDependencies from './configs/djangoDependencies.json' assert {type: 'json'};
 import copy from 'recursive-copy';
-import { generateSecretKey } from './utils/generateSecretKey.js';
+import {generateSecretKey} from './utils/generateSecretKey.js';
 import * as constants from 'constants';
 
 /**
@@ -107,11 +107,56 @@ async function copyDjangoSettings(destinationBase) {
   }
 }
 
+/**
+ * @description Writes settings for dev mode
+ * @param secretKey This serves as Django's secret key
+ * @param destination
+ * @returns {Promise<void>}
+ */
 async function writeDevSettings(secretKey, destination) {
   try {
-    await appendFile(destination, `\nSECRET_KEY = '${secretKey}'`);
+    await appendFile(destination, `\nSECRET_KEY = "${secretKey}"`);
   } catch (e) {
     console.log('Failed to overwrite settings file with error: ', e.toString());
+  }
+}
+
+/**
+ * @description Writes updated configuration to base settings
+ * @param projectName
+ * @param destination
+ * @returns {Promise<void>}
+ */
+async function writeBaseSettings(projectName, destination) {
+  try {
+    await appendFile(
+      destination,
+      `\nWSGI_APPLICATION = "${projectName}.wsgi.application"`
+    );
+    await appendFile(destination, `\nROOT_URLCONF = "${projectName}.urls"`);
+  } catch (e) {
+    console.log('Failed to overwrite vase settings with error: ', e.toString());
+  }
+}
+
+/**
+ * @description Copies inertia specific urls.py and default views file to the project destination
+ * @param destinationPath
+ * @returns {Promise<void>}
+ */
+async function copyInertiaDefaults(destinationPath) {
+  try {
+    const currentFileUrl = import.meta.url;
+    const inertiaDefaultsDir = path.resolve(
+      new URL(currentFileUrl).pathname,
+      '../../templates/inertia-defaults'
+    );
+    const copyResults = await copy(inertiaDefaultsDir, destinationPath, {
+      overwrite: true,
+    });
+    console.log(`${copyResults.length} Inertia files copied`);
+  } catch (e) {
+    console.log('Failed to copy inertia defaults with error: ', e.toString());
   }
 }
 
@@ -182,6 +227,8 @@ export async function scaffoldDjango(options) {
     console.log('setting secret key...');
     const devSettingsPath = path.join(destination, 'dirt_settings', 'dev.py');
     await writeDevSettings(secretKey, devSettingsPath);
+    const baseSettingsPath = path.join(destination, 'dirt_settings', 'base.py');
+    await writeBaseSettings(projectName, baseSettingsPath);
     // delete generated settings file
     console.log(
       "Removing default settings.py file (we won't need it anymore, trust me...)"
@@ -197,6 +244,15 @@ export async function scaffoldDjango(options) {
     const newIgnorePath = path.join(destination, '.gitignore');
     console.log('renaming ignore file...');
     await rename(originalIgnorePath, newIgnorePath);
+    // overwrite urls.py and views.py in base project
+    const projectPath = path.join(destination, projectName);
+    await copyInertiaDefaults(projectPath);
+
+    console.log('Making project runnable...');
+    // change permissions of manage.py so that we can run it
+    // check if on windows on *Nix
+    const managePyPath = path.join(destination, 'manage.py');
+    await chmod(managePyPath, 0o775);
     return true;
   } catch (e) {
     console.log('failed to execute commands with error: ', e.toString());

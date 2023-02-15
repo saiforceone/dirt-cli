@@ -10,5 +10,5 @@ import cryptoRandomString from 'crypto-random-string';
  * @returns {string}
  */
 export function generateSecretKey(length = 64) {
-  return cryptoRandomString({ length, type: 'ascii-printable' });
+  return cryptoRandomString({ length, type: 'url-safe' });
 }

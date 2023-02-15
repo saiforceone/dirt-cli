@@ -3,6 +3,11 @@ import inquirer from 'inquirer';
 
 const { scaffoldDjango } = await import('./scaffoldDjango.js');
 
+/**
+ * @description Parses CLI arguments and returns a convenient object we can use
+ * @param rawArgs
+ * @returns {{withPipenv: boolean, projectName: string, withStorybook: boolean}}
+ */
 function parseArgs(rawArgs) {
   const args = arg(
     {
@@ -21,6 +26,12 @@ function parseArgs(rawArgs) {
     withPipenv: args['--withPipenv'] || false,
   };
 }
+
+/**
+ * @description Triggers the prompt if the user has forgotten to enter the project name
+ * @param options
+ * @returns {Promise<*&{projectName: *}>}
+ */
 async function promptForMissingOpts(options) {
   const prompts = [];
   if (!options['projectName']) {
@@ -37,11 +48,17 @@ async function promptForMissingOpts(options) {
   };
 }
 
+/**
+ * @description entry point for the application / util. Scaffolding of the different parts of
+ * a D.I.R.T Stack application happens here
+ * @param args
+ * @returns {Promise<void>}
+ */
 export async function cli(args) {
   let options = parseArgs(args);
   options = await promptForMissingOpts(options);
-  console.log(options);
-  console.log('Doing things for django...');
+  // Scaffolds the Django (core) application and sets up base structure
   const djangoResult = await scaffoldDjango(options);
   console.log(`Django setup status: ${djangoResult ? 'Successful' : 'Failed'}`);
+  // Scaffold the React (FE) application
 }
