@@ -59,6 +59,6 @@ export async function cli(args) {
   options = await promptForMissingOpts(options);
   // Scaffolds the Django (core) application and sets up base structure
   const djangoResult = await scaffoldDjango(options);
-  console.log(`Django setup status: ${djangoResult ? 'Successful' : 'Failed'}`);
+  console.log(`Django setup status: ${djangoResult.result}`);
   // Scaffold the React (FE) application
 }

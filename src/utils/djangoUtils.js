@@ -1,16 +1,26 @@
-import djangoDependencies from '../configs/djangoDependencies.json' assert { type: 'json' };
 import { exec } from 'child_process';
 import fs from 'fs';
 import constants from 'constants';
 import path from 'path';
 import { access, appendFile } from 'node:fs/promises';
+import { createRequire } from 'module';
 import copy from 'recursive-copy';
+import {
+  DJANGO_TEMPLATES_PATH,
+  INERTIA_DEFAULTS_PATH,
+  PIPENV_VENV_COMMAND,
+} from '../constants/djangoConstants.js';
+const require = createRequire(import.meta.url);
+const djangoDependencies = require('../configs/djangoDependencies.json');
+// import djangoDependencies from '../configs/djangoDependencies.json' assert { type: 'json' };
+import { standardOutputBuilder } from './standardOutputBuilder.js';
 
 /**
  * @description This function handles the installation of dependencies via Pipenv
  * @returns {Promise<*>}
  */
 export function installDependencies() {
+  const output = standardOutputBuilder();
   console.log('execute install dependencies at: ', new Date().toString());
   return new Promise((resolve, reject) => {
     // use the dependencies file to build the install string
@@ -22,7 +32,9 @@ export function installDependencies() {
       if (error) {
         console.warn(error);
       }
-      resolve(stdout ? stdout : stderr);
+      output.success = true;
+      output.result = stdout ? stdout : stderr;
+      resolve(output);
     });
   });
 }
@@ -35,24 +47,29 @@ export function installDependencies() {
  * @returns {Promise<*>}
  */
 export function createDjangoProject(projectName, pythonExecutable) {
+  const output = standardOutputBuilder();
   console.log('execute create django project at: ', new Date().toString());
   return new Promise((resolve, reject) => {
     try {
       fs.accessSync(pythonExecutable, constants.R_OK | constants.X_OK);
     } catch (e) {
-      reject(e);
+      output.error = e.message;
+      reject(output);
     }
-    const venvCommand = 'pipenv --venv';
+    const venvCommand = PIPENV_VENV_COMMAND;
     const projectCommand = `${pythonExecutable} -m django startproject ${projectName} .`;
     exec(venvCommand, (error, stdout, stderr) => {
       if (error) {
-        reject(error);
+        output.error = error.message;
+        reject(output);
       }
       exec(projectCommand, (pcError, pcStdout, pcStderr) => {
         if (pcError) {
           console.warn(pcError);
         }
-        resolve(pcStdout ? pcStdout : pcStderr);
+        output.success = true;
+        output.result = pcStdout ? pcStdout : pcStderr;
+        resolve(output);
       });
     });
   });
@@ -64,14 +81,17 @@ export function createDjangoProject(projectName, pythonExecutable) {
  * @returns {Promise<*>}
  */
 export function getVirtualEnvLocation() {
+  const output = standardOutputBuilder();
   console.log('execute get venv location at: ', new Date().toString());
   return new Promise((resolve, reject) => {
-    const command = 'pipenv --venv';
-    exec(command, (error, stdout, stderr) => {
+    exec(PIPENV_VENV_COMMAND, (error, stdout, stderr) => {
       if (error) {
-        console.warn(error);
+        output.error = error.message;
+        reject(output);
       }
-      resolve(stdout ? stdout : stderr);
+      output.success = true;
+      output.result = stdout ? stdout : stderr;
+      resolve(output);
     });
   });
 }
@@ -86,7 +106,7 @@ export async function copyDjangoSettings(destinationBase) {
     const currentFileUrl = import.meta.url;
     const templateBaseDir = path.resolve(
       new URL(currentFileUrl).pathname,
-      '../../../templates/django-templates'
+      DJANGO_TEMPLATES_PATH
     );
 
     await access(destinationBase, constants.W_OK);
@@ -143,7 +163,7 @@ export async function copyInertiaDefaults(destinationPath) {
     const currentFileUrl = import.meta.url;
     const inertiaDefaultsDir = path.resolve(
       new URL(currentFileUrl).pathname,
-      '../../../templates/inertia-defaults'
+      INERTIA_DEFAULTS_PATH
     );
     const copyResults = await copy(inertiaDefaultsDir, destinationPath, {
       overwrite: true,
