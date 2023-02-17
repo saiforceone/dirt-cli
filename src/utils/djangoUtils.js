@@ -1,12 +1,10 @@
-import djangoDependencies from '../configs/djangoDependencies.json';
-import {exec} from 'child_process';
+import djangoDependencies from '../configs/djangoDependencies.json' assert { type: 'json' };
+import { exec } from 'child_process';
 import fs from 'fs';
 import constants from 'constants';
 import path from 'path';
-import {access, appendFile} from 'node:fs/promises';
+import { access, appendFile } from 'node:fs/promises';
 import copy from 'recursive-copy';
-
-// TODO: Figure out why this isn't working when we export the functions
 
 /**
  * @description This function handles the installation of dependencies via Pipenv
@@ -88,7 +86,7 @@ export async function copyDjangoSettings(destinationBase) {
     const currentFileUrl = import.meta.url;
     const templateBaseDir = path.resolve(
       new URL(currentFileUrl).pathname,
-      '../../templates/django-templates'
+      '../../../templates/django-templates'
     );
 
     await access(destinationBase, constants.W_OK);
@@ -145,7 +143,7 @@ export async function copyInertiaDefaults(destinationPath) {
     const currentFileUrl = import.meta.url;
     const inertiaDefaultsDir = path.resolve(
       new URL(currentFileUrl).pathname,
-      '../../templates/inertia-defaults'
+      '../../../templates/inertia-defaults'
     );
     const copyResults = await copy(inertiaDefaultsDir, destinationPath, {
       overwrite: true,

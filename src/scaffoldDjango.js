@@ -2,163 +2,26 @@
  * scaffoldDjango.js
  * This is the main file responsible for scaffolding the Django part of the DIRT stack
  */
-import {exec} from 'child_process';
-import {execaCommand} from 'execa';
+import { execaCommand } from 'execa';
 import path from 'path';
 import fs from 'fs';
-import {access, appendFile, chmod, rename, unlink} from 'node:fs/promises';
-import djangoDependencies from './configs/djangoDependencies.json' assert {type: 'json'};
-import copy from 'recursive-copy';
-import {generateSecretKey} from './utils/generateSecretKey.js';
+import { chmod, rename, unlink } from 'node:fs/promises';
+import {
+  copyDjangoSettings,
+  copyInertiaDefaults,
+  createDjangoProject,
+  getVirtualEnvLocation,
+  installDependencies,
+  writeBaseSettings,
+  writeDevSettings,
+} from './utils/djangoUtils.js';
+import { generateSecretKey } from './utils/generateSecretKey.js';
 import * as constants from 'constants';
 
-/**
- * @description This function handles the installation of dependencies via Pipenv
- * @returns {Promise<*>}
- */
-function installDependencies() {
-  console.log('execute install dependencies at: ', new Date().toString());
-  return new Promise((resolve, reject) => {
-    // use the dependencies file to build the install string
-    const packageList = Object.keys(djangoDependencies.packages)
-      .map((pkg) => `${pkg}==${djangoDependencies.packages[pkg]}`)
-      .join(' ');
-    const command = `pipenv install ${packageList}`;
-    exec(command, (error, stdout, stderr) => {
-      if (error) {
-        console.warn(error);
-      }
-      resolve(stdout ? stdout : stderr);
-    });
-  });
-}
+// Permission that should be applied when we overwrite manage.py
+const MANAGE_PY_MODE = 0o775;
 
-/**
- * @description This function is responsible for creating the Django project. For this process to work, we
- * have to specify which python executable needs to be used as we cannot activate the virtual environment.
- * @param projectName This refers to the name of the project which is read from the command line
- * @param pythonExecutable The path to the python executable so that `startproject` can be kicked off
- * @returns {Promise<*>}
- */
-function createDjangoProject(projectName, pythonExecutable) {
-  console.log('execute create django project at: ', new Date().toString());
-  return new Promise((resolve, reject) => {
-    try {
-      fs.accessSync(pythonExecutable, constants.R_OK | constants.X_OK);
-    } catch (e) {
-      reject(e);
-    }
-    const venvCommand = 'pipenv --venv';
-    const projectCommand = `${pythonExecutable} -m django startproject ${projectName} .`;
-    exec(venvCommand, (error, stdout, stderr) => {
-      if (error) {
-        reject(error);
-      }
-      exec(projectCommand, (pcError, pcStdout, pcStderr) => {
-        if (pcError) {
-          console.warn(pcError);
-        }
-        resolve(pcStdout ? pcStdout : pcStderr);
-      });
-    });
-  });
-}
-
-/**
- * @description Gets the location of the virtual environment that was created so that
- * the path to the python executable can be determined.
- * @returns {Promise<*>}
- */
-function getVirtualEnvLocation() {
-  console.log('execute get venv location at: ', new Date().toString());
-  return new Promise((resolve, reject) => {
-    const command = 'pipenv --venv';
-    exec(command, (error, stdout, stderr) => {
-      if (error) {
-        console.warn(error);
-      }
-      resolve(stdout ? stdout : stderr);
-    });
-  });
-}
-
-/**
- * @description Copies django template data to the destination directory. Overwrites the original manage.py file
- * @param destinationBase
- * @returns {Promise<void>}
- */
-async function copyDjangoSettings(destinationBase) {
-  try {
-    const currentFileUrl = import.meta.url;
-    const templateBaseDir = path.resolve(
-      new URL(currentFileUrl).pathname,
-      '../../templates/django-templates'
-    );
-
-    await access(destinationBase, constants.W_OK);
-    console.log('template base dir: ', templateBaseDir);
-    const results = await copy(templateBaseDir, destinationBase, {
-      overwrite: true,
-      dot: true,
-    });
-    console.log(`File copy results: ${results.length} files copied.`);
-  } catch (e) {
-    console.log('Failed to copy files with error: ', e.toString());
-  }
-}
-
-/**
- * @description Writes settings for dev mode
- * @param secretKey This serves as Django's secret key
- * @param destination
- * @returns {Promise<void>}
- */
-async function writeDevSettings(secretKey, destination) {
-  try {
-    await appendFile(destination, `\nSECRET_KEY = "${secretKey}"`);
-  } catch (e) {
-    console.log('Failed to overwrite settings file with error: ', e.toString());
-  }
-}
-
-/**
- * @description Writes updated configuration to base settings
- * @param projectName
- * @param destination
- * @returns {Promise<void>}
- */
-async function writeBaseSettings(projectName, destination) {
-  try {
-    await appendFile(
-      destination,
-      `\nWSGI_APPLICATION = "${projectName}.wsgi.application"`
-    );
-    await appendFile(destination, `\nROOT_URLCONF = "${projectName}.urls"`);
-  } catch (e) {
-    console.log('Failed to overwrite vase settings with error: ', e.toString());
-  }
-}
-
-/**
- * @description Copies inertia specific urls.py and default views file to the project destination
- * @param destinationPath
- * @returns {Promise<void>}
- */
-async function copyInertiaDefaults(destinationPath) {
-  try {
-    const currentFileUrl = import.meta.url;
-    const inertiaDefaultsDir = path.resolve(
-      new URL(currentFileUrl).pathname,
-      '../../templates/inertia-defaults'
-    );
-    const copyResults = await copy(inertiaDefaultsDir, destinationPath, {
-      overwrite: true,
-    });
-    console.log(`${copyResults.length} Inertia files copied`);
-  } catch (e) {
-    console.log('Failed to copy inertia defaults with error: ', e.toString());
-  }
-}
+const DIRT_SETTINGS_FOLDER = 'dirt_settings';
 
 /**
  * @description Main function that kicks off the process for scaffolding the Django application
@@ -203,9 +66,11 @@ export async function scaffoldDjango(options) {
     // Kick off the dependency installation
     const installDepsResults = await installDependencies();
     console.log('install deps results: ', installDepsResults);
+
     // Determine environment of the related virtual environment
     const pipenvLocation = await getVirtualEnvLocation();
     console.log('pipenv location: ', pipenvLocation);
+
     // build path to the python executable
     const pythonExecutable = path.join(
       String(pipenvLocation).trim(),
@@ -213,21 +78,31 @@ export async function scaffoldDjango(options) {
       'python3'
     );
     console.log('python executable to be used: ', pythonExecutable);
+
     // Create the django project or at least attempt to
     const createProjectResult = await createDjangoProject(
       projectName,
       pythonExecutable
     );
     console.log('create project results: ', createProjectResult);
+
     // copy settings template
     console.log('copy django files to project');
     await copyDjangoSettings(destination);
     // generate secret key file and update dirt_settings/dev.py
     const secretKey = generateSecretKey();
     console.log('setting secret key...');
-    const devSettingsPath = path.join(destination, 'dirt_settings', 'dev.py');
+    const devSettingsPath = path.join(
+      destination,
+      DIRT_SETTINGS_FOLDER,
+      'dev.py'
+    );
     await writeDevSettings(secretKey, devSettingsPath);
-    const baseSettingsPath = path.join(destination, 'dirt_settings', 'base.py');
+    const baseSettingsPath = path.join(
+      destination,
+      DIRT_SETTINGS_FOLDER,
+      'base.py'
+    );
     await writeBaseSettings(projectName, baseSettingsPath);
     // delete generated settings file
     console.log(
@@ -239,11 +114,13 @@ export async function scaffoldDjango(options) {
       'settings.py'
     );
     await unlink(originalSettingsFilePath);
+
     // rename git ignore file
     const originalIgnorePath = path.join(destination, '.gitignore.template');
     const newIgnorePath = path.join(destination, '.gitignore');
     console.log('renaming ignore file...');
     await rename(originalIgnorePath, newIgnorePath);
+
     // overwrite urls.py and views.py in base project
     const projectPath = path.join(destination, projectName);
     await copyInertiaDefaults(projectPath);
@@ -252,7 +129,7 @@ export async function scaffoldDjango(options) {
     // change permissions of manage.py so that we can run it
     // check if on windows on *Nix
     const managePyPath = path.join(destination, 'manage.py');
-    await chmod(managePyPath, 0o775);
+    await chmod(managePyPath, MANAGE_PY_MODE);
     return true;
   } catch (e) {
     console.log('failed to execute commands with error: ', e.toString());
