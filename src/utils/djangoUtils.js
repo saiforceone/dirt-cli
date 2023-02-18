@@ -10,9 +10,9 @@ import {
   INERTIA_DEFAULTS_PATH,
   PIPENV_VENV_COMMAND,
 } from '../constants/djangoConstants.js';
+import ConsoleLogger from './ConsoleLogger.js';
 const require = createRequire(import.meta.url);
 const djangoDependencies = require('../configs/djangoDependencies.json');
-// import djangoDependencies from '../configs/djangoDependencies.json' assert { type: 'json' };
 import { standardOutputBuilder } from './standardOutputBuilder.js';
 
 /**
@@ -21,7 +21,6 @@ import { standardOutputBuilder } from './standardOutputBuilder.js';
  */
 export function installDependencies() {
   const output = standardOutputBuilder();
-  console.log('execute install dependencies at: ', new Date().toString());
   return new Promise((resolve, reject) => {
     // use the dependencies file to build the install string
     const packageList = Object.keys(djangoDependencies.packages)
@@ -30,7 +29,7 @@ export function installDependencies() {
     const command = `pipenv install ${packageList}`;
     exec(command, (error, stdout, stderr) => {
       if (error) {
-        console.warn(error);
+        ConsoleLogger.printMessage(error.message, 'warning');
       }
       output.success = true;
       output.result = stdout ? stdout : stderr;
@@ -48,7 +47,6 @@ export function installDependencies() {
  */
 export function createDjangoProject(projectName, pythonExecutable) {
   const output = standardOutputBuilder();
-  console.log('execute create django project at: ', new Date().toString());
   return new Promise((resolve, reject) => {
     try {
       fs.accessSync(pythonExecutable, constants.R_OK | constants.X_OK);
@@ -65,7 +63,7 @@ export function createDjangoProject(projectName, pythonExecutable) {
       }
       exec(projectCommand, (pcError, pcStdout, pcStderr) => {
         if (pcError) {
-          console.warn(pcError);
+          ConsoleLogger.printMessage(pcError.message, 'warnging');
         }
         output.success = true;
         output.result = pcStdout ? pcStdout : pcStderr;
@@ -82,7 +80,6 @@ export function createDjangoProject(projectName, pythonExecutable) {
  */
 export function getVirtualEnvLocation() {
   const output = standardOutputBuilder();
-  console.log('execute get venv location at: ', new Date().toString());
   return new Promise((resolve, reject) => {
     exec(PIPENV_VENV_COMMAND, (error, stdout, stderr) => {
       if (error) {
@@ -110,14 +107,18 @@ export async function copyDjangoSettings(destinationBase) {
     );
 
     await access(destinationBase, constants.W_OK);
-    console.log('template base dir: ', templateBaseDir);
     const results = await copy(templateBaseDir, destinationBase, {
       overwrite: true,
       dot: true,
     });
-    console.log(`File copy results: ${results.length} files copied.`);
+    ConsoleLogger.printMessage(
+      `File copy results: ${results.length} files copied.`,
+      'success'
+    );
   } catch (e) {
-    console.log('Failed to copy files with error: ', e.toString());
+    ConsoleLogger.printMessage(
+      `Failed to copy files with error: ${e.toString()}`
+    );
   }
 }
 
@@ -131,7 +132,9 @@ export async function writeDevSettings(secretKey, destination) {
   try {
     await appendFile(destination, `\nSECRET_KEY = "${secretKey}"`);
   } catch (e) {
-    console.log('Failed to overwrite settings file with error: ', e.toString());
+    ConsoleLogger.printMessage(
+      `Failed to overwrite settings file with error: ${e.toString()} `
+    );
   }
 }
 
@@ -149,7 +152,10 @@ export async function writeBaseSettings(projectName, destination) {
     );
     await appendFile(destination, `\nROOT_URLCONF = "${projectName}.urls"`);
   } catch (e) {
-    console.log('Failed to overwrite vase settings with error: ', e.toString());
+    ConsoleLogger.printMessage(
+      `Failed to overwrite vase settings with error: ${e.toString()}`,
+      'error'
+    );
   }
 }
 
@@ -168,8 +174,10 @@ export async function copyInertiaDefaults(destinationPath) {
     const copyResults = await copy(inertiaDefaultsDir, destinationPath, {
       overwrite: true,
     });
-    console.log(`${copyResults.length} Inertia files copied`);
+    ConsoleLogger.printMessage(`${copyResults.length} Inertia files copied`);
   } catch (e) {
-    console.log('Failed to copy inertia defaults with error: ', e.toString());
+    ConsoleLogger.printMessage(
+      `Failed to copy inertia defaults with error: ${e.toString()}`
+    );
   }
 }

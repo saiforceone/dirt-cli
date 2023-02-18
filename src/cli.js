@@ -1,5 +1,6 @@
 import arg from 'arg';
 import inquirer from 'inquirer';
+import ConsoleLogger from './utils/ConsoleLogger.js';
 
 const { scaffoldDjango } = await import('./scaffoldDjango.js');
 
@@ -57,8 +58,12 @@ async function promptForMissingOpts(options) {
 export async function cli(args) {
   let options = parseArgs(args);
   options = await promptForMissingOpts(options);
+  // print welcome
+  ConsoleLogger.printMessage(
+    'Preparing to set up your D.I.R.T Stack application...'
+  );
   // Scaffolds the Django (core) application and sets up base structure
   const djangoResult = await scaffoldDjango(options);
-  console.log(`Django setup status: ${djangoResult.result}`);
+  ConsoleLogger.printMessage(`Django setup status: ${djangoResult.result}`);
   // Scaffold the React (FE) application
 }
