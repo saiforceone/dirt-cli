@@ -3,6 +3,7 @@ import inquirer from 'inquirer';
 import ConsoleLogger from './utils/ConsoleLogger.js';
 
 const { scaffoldDjango } = await import('./scaffoldDjango.js');
+const { scaffoldReact } = await import('./scaffoldReact.js');
 
 /**
  * @description Parses CLI arguments and returns a convenient object we can use
@@ -66,4 +67,6 @@ export async function cli(args) {
   const djangoResult = await scaffoldDjango(options);
   ConsoleLogger.printMessage(`Django setup status: ${djangoResult.result}`);
   // Scaffold the React (FE) application
+  const reactResult = await scaffoldReact(options);
+  ConsoleLogger.printMessage(`React FE Status: ${reactResult.result}`);
 }
