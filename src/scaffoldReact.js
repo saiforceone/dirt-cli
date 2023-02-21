@@ -3,7 +3,10 @@ import { execaCommand } from 'execa';
 
 import { standardOutputBuilder } from './utils/standardOutputBuilder.js';
 import path from 'path';
-import { copyReactFE } from './utils/reactFEUtils.js';
+import {
+  copyReactFE,
+  installCoreReactFEDependencies,
+} from './utils/reactFEUtils.js';
 import copy from 'recursive-copy';
 /**
  * @description Main function that kicks off the process for scaffolding the React frontend
@@ -41,15 +44,16 @@ export async function scaffoldReact(options) {
     return copyReactFilesResults;
   }
 
-  ConsoleLogger.printMessage('Installing NPM dependencies...');
-  try {
-    await execaCommand('npm i').stdout.pipe(process.stdout);
-    ConsoleLogger.printMessage('NPM packages installed', 'success');
-  } catch (e) {
-    output.result = 'Failed to install NPM packages';
-    output.error = e.toString();
+  ConsoleLogger.printMessage(
+    'Installing core D.I.R.T Stack React dependencies...'
+  );
+  const installReactDepsResults = await installCoreReactFEDependencies();
+
+  if (!installReactDepsResults.success) {
     return output;
   }
+
+  ConsoleLogger.printMessage(`Dependencies installed`, 'success');
 
   output.result = 'React Application Scaffolded...';
   output.success = true;

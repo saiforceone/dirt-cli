@@ -1,0 +1,15 @@
+{
+  "packages": {
+    "@storybook/addon-actions": "^6.5.16",
+    "@storybook/addon-backgrounds": "^6.5.16",
+    "@storybook/addon-docs": "^6.5.16",
+    "@storybook/addon-essentials": "^6.5.16",
+    "@storybook/addon-links": "^6.5.16",
+    "@storybook/addon-measure": "^6.5.16",
+    "@storybook/addon-outline": "^6.5.16",
+    "@storybook/builder-vite": "^0.4.0",
+    "@storybook/client-api": "^6.5.16",
+    "@storybook/client-logger": "^6.5.16",
+    "@storybook/react": "^6.5.16"
+  }
+}
