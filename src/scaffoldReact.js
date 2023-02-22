@@ -1,13 +1,10 @@
 import ConsoleLogger from './utils/ConsoleLogger.js';
-import { execaCommand } from 'execa';
+import {execaCommand} from 'execa';
 
-import { standardOutputBuilder } from './utils/standardOutputBuilder.js';
+import {standardOutputBuilder} from './utils/standardOutputBuilder.js';
 import path from 'path';
-import {
-  copyReactFE,
-  installCoreReactFEDependencies,
-} from './utils/reactFEUtils.js';
-import copy from 'recursive-copy';
+import {copyReactFE, copyReactStatic, installCoreReactFEDependencies,} from './utils/reactFEUtils.js';
+
 /**
  * @description Main function that kicks off the process for scaffolding the React frontend
  * @param options
@@ -43,6 +40,14 @@ export async function scaffoldReact(options) {
   if (!copyReactFilesResults.success) {
     return copyReactFilesResults;
   }
+
+  const copyReactStaticResults = await copyReactStatic(destination);
+  ConsoleLogger.printMessage(
+    copyReactStaticResults.error
+      ? copyReactStaticResults.error
+      : copyReactStaticResults.result,
+    copyReactStaticResults.success ? 'success' : 'error'
+  );
 
   ConsoleLogger.printMessage(
     'Installing core D.I.R.T Stack React dependencies...'
