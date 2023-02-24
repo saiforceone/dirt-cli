@@ -1,5 +1,5 @@
-import * as React from 'react';
 import type { FC } from 'react';
+import * as React from 'react';
 import { FaInfoCircle } from 'react-icons/all';
 
 interface NoteProps {
