@@ -7,6 +7,7 @@ import {
   FaFolder,
   FaGithubAlt,
   SiDjango,
+  SiStorybook,
   SiTailwindcss,
   SiVite,
   TbShovel,
@@ -16,9 +17,11 @@ import { Note } from '../../components/shared/Note/Note';
 
 const FolderIcon = <FaFolder size={20} />;
 const Index = (): React.ReactNode => {
-  console.log('render projectConfig: ', projectConfig);
   return (
-    <div className="bg-slate-700 flex flex-col gap-y-6 p-2 text-center w-full md:max-w-7xl md:min-w-5xl">
+    <div
+      className="flex flex-col gap-y-6 p-2 text-center w-full md:max-w-7xl md:min-w-5xl"
+      style={{ background: '#2d2d2d' }}
+    >
       <TbShovel className="self-center text-white" size={100} />
       <h1 className="text-white text-center text-7xl">
         Ready to get D.I.R.T-y?
@@ -44,6 +47,13 @@ const Index = (): React.ReactNode => {
       </div>
       <h2 className="text-white text-4xl">Important Files & Folders</h2>
       <div className="flex flex-col px-2 py-2 gap-y-2 bg-purple-200 border-purple-700 border-2 text-purple-600 rounded text-left">
+        {projectConfig.withStorybook && (
+          <Note
+            iconElement={FolderIcon}
+            labelText=".storybook"
+            content="Contains configuration for StorybookJS"
+          />
+        )}
         <Note
           iconElement={FolderIcon}
           labelText="@dirt_project"
@@ -75,28 +85,6 @@ const Index = (): React.ReactNode => {
           content="Main entry point of the Inertia application"
         />
       </div>
-      {/*<h2>Important Folders</h2>*/}
-      {/*<div className="px-2 py-4 bg-purple-200 border-purple-700 border-2 text-left text-purple-600 rounded">*/}
-      {/*  <p>Here are some folders you should take note of</p>*/}
-      {/*  <div>*/}
-      {/*    <FaFolder size={24} />*/}
-      {/*    <span>*/}
-      {/*      @dirt_project: <span>Contains project settings</span>*/}
-      {/*    </span>*/}
-      {/*  </div>*/}
-      {/*  <div>*/}
-      {/*    <FaFolder size={24} />*/}
-      {/*    <span>*/}
-      {/*      dirt_fe_react: <span>Contains the React web application</span>*/}
-      {/*    </span>*/}
-      {/*  </div>*/}
-      {/*  <div>*/}
-      {/*    <FaFolder size={24} />*/}
-      {/*    <span>*/}
-      {/*      {projectConfig.projectName}: <span>Main Django application</span>*/}
-      {/*    </span>*/}
-      {/*  </div>*/}
-      {/*</div>*/}
       <p className="text-slate-400 text-lg">
         <span className="font-bold text-white">D.I.R.T</span>, truly down to
         earth, built on a solid foundation with
@@ -145,16 +133,31 @@ const Index = (): React.ReactNode => {
       <p className="text-slate-400 text-lg">
         and <span className="font-bold text-white">supercharged</span> by
       </p>
-      <div className="flex flex-col items-center">
-        <a
-          className="text-white flex items-center gap-x-2"
-          href="https://vitejs.dev/"
-          target="_blank"
-        >
-          <SiVite size={32} />
-          <span className="text-2xl">ViteJs</span>
-        </a>
+      <div className="flex items-center justify-between self-center gap-x-8">
+        <div className="flex flex-col items-center">
+          <a
+            className="text-white flex items-center gap-x-2"
+            href="https://vitejs.dev/"
+            target="_blank"
+          >
+            <SiVite size={32} />
+            <span className="text-2xl">ViteJs</span>
+          </a>
+        </div>
+        {projectConfig.withStorybook && (
+          <div className="flex flex-col text-white items-center gap-y-2">
+            <a
+              className="text-white flex items-center gap-x-2"
+              href="https://storybook.js.org/"
+              target="_blank"
+            >
+              <SiStorybook size={32} />
+              <span className="text-2xl">StorybookJS</span>
+            </a>
+          </div>
+        )}
       </div>
+
       <h2 className="text-center text-white text-2xl">Get Connected</h2>
       <div className="flex self-center gap-x-8 text-white">
         <a

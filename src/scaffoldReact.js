@@ -1,13 +1,16 @@
 import ConsoleLogger from './utils/ConsoleLogger.js';
-import { execaCommand } from 'execa';
-import { writeProjectConfig } from './utils/feUtils.js';
+import {execaCommand} from 'execa';
+import {updateNPMAttribs, writeProjectConfig} from './utils/feUtils.js';
 
-import { standardOutputBuilder } from './utils/standardOutputBuilder.js';
+import {standardOutputBuilder} from './utils/standardOutputBuilder.js';
 import path from 'path';
 import {
   copyReactFE,
   copyReactStatic,
+  copyReactStorybookFiles,
   installCoreReactFEDependencies,
+  installStorybookReactDependencies,
+  updateNPMScriptsForStorybook,
 } from './utils/reactFEUtils.js';
 
 /**
@@ -68,6 +71,15 @@ export async function scaffoldReact(options) {
     copyReactStaticResults.success ? 'success' : 'error'
   );
 
+  // update package.json attributes: name, description
+  ConsoleLogger.printMessage('Updating package.json file...');
+
+  const updateNPMBaseResults = await updateNPMAttribs(options, destination);
+
+  if (!updateNPMBaseResults.success) return updateNPMBaseResults;
+
+  ConsoleLogger.printMessage(updateNPMBaseResults.result, 'success');
+
   ConsoleLogger.printMessage(
     'Installing core D.I.R.T Stack React dependencies...'
   );
@@ -78,6 +90,38 @@ export async function scaffoldReact(options) {
   }
 
   ConsoleLogger.printMessage(`Dependencies installed`, 'success');
+
+  if (options['withStorybook']) {
+    ConsoleLogger.printMessage('Setting up Storybook...');
+    // copy storybook files
+    const sbFileCopyResults = await copyReactStorybookFiles(destination);
+
+    if (!sbFileCopyResults.success) {
+      return sbFileCopyResults;
+    }
+
+    ConsoleLogger.printMessage('Storybook files copied', 'success');
+    // install storybook deps
+
+    ConsoleLogger.printMessage('Installing Storybook dependencies...');
+
+    const sbInstallDepResults = await installStorybookReactDependencies();
+    if (!sbInstallDepResults.success) {
+      return sbInstallDepResults;
+    }
+
+    ConsoleLogger.printMessage('Storybook dependencies installed', 'success');
+
+    // update the scripts in package.json
+    ConsoleLogger.printMessage('Updating NPM scripts for Storybook...');
+
+    const sbUpdatePkgResults = await updateNPMScriptsForStorybook(destination);
+    if (!sbUpdatePkgResults.success) {
+      return sbUpdatePkgResults;
+    }
+
+    ConsoleLogger.printMessage('Updated NPM scripts', 'success');
+  }
 
   output.result = 'React Application Scaffolded...';
   output.success = true;

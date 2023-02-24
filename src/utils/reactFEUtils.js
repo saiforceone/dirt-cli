@@ -2,7 +2,7 @@ import { exec } from 'child_process';
 import { createRequire } from 'module';
 import { standardOutputBuilder } from './standardOutputBuilder.js';
 import path from 'path';
-import { access } from 'node:fs/promises';
+import { access, writeFile } from 'node:fs/promises';
 import copy from 'recursive-copy';
 import constants from 'node:constants';
 import {
@@ -10,6 +10,13 @@ import {
   REACT_STATIC_TEMPLATES_PATH,
   REACT_TEMPLATES_PATH,
 } from '../constants/reactConstants.js';
+import {
+  PACKAGE_JSON_FILE,
+  STORYBOOK_SCRIPT_BUILD,
+  STORYBOOK_SCRIPT_DEV,
+  STORYBOOK_SCRIPT_DEV_PRE,
+} from '../constants/feConstants.js';
+import { getPackageFile } from './feUtils.js';
 
 const FILE_COPY_OPTS = Object.freeze({
   overwrite: true,
@@ -156,4 +163,35 @@ export async function installStorybookReactDependencies() {
       resolve(output);
     });
   });
+}
+
+/**
+ * @todo Extract functionality to update package.json to a generic function
+ * @description Updates the package.json file with the storybook scripts
+ * @param destinationPath
+ * @returns {Promise<{error: String, result: *, success: boolean}>}
+ */
+export async function updateNPMScriptsForStorybook(destinationPath) {
+  const output = standardOutputBuilder();
+  try {
+    // read & parse the package.json file in the project
+    const pkgFilePath = path.join(destinationPath, PACKAGE_JSON_FILE);
+    const fileContents = await getPackageFile(destinationPath);
+
+    // add entries to "scripts" for storybook
+    fileContents['scripts']['prestorybook'] = STORYBOOK_SCRIPT_DEV_PRE;
+    fileContents['scripts']['storybook'] = STORYBOOK_SCRIPT_DEV;
+    fileContents['scripts']['storybook-build'] = STORYBOOK_SCRIPT_BUILD;
+
+    // save the file and return
+    await writeFile(pkgFilePath, JSON.stringify(fileContents, null, 2));
+
+    output.result = 'Package file updated';
+    output.success = true;
+    return output;
+  } catch (e) {
+    output.error = e.toString();
+    output.result = 'Failed to update NPM scripts for Storybook';
+    return output;
+  }
 }

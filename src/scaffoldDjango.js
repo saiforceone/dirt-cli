@@ -7,18 +7,8 @@ import path from 'path';
 import fs from 'fs';
 import { chmod, mkdir, rename, unlink } from 'node:fs/promises';
 import ConsoleLogger from './utils/ConsoleLogger.js';
-
-const {
-  copyDjangoSettings,
-  copyInertiaDefaults,
-  createDjangoProject,
-  getVirtualEnvLocation,
-  installDependencies,
-  writeBaseSettings,
-  writeDevSettings,
-} = await import('./utils/djangoUtils.js');
 import { generateSecretKey } from './utils/generateSecretKey.js';
-import * as constants from 'constants';
+import constants from 'node:constants';
 import {
   BASE_PY_FILENAME,
   DEV_PY_FILENAME,
@@ -34,6 +24,16 @@ import {
 import { standardOutputBuilder } from './utils/standardOutputBuilder.js';
 import { validateProjectName } from './utils/validateProjectName.js';
 
+const {
+  copyDjangoSettings,
+  copyInertiaDefaults,
+  createDjangoProject,
+  getVirtualEnvLocation,
+  installDependencies,
+  writeBaseSettings,
+  writeDevSettings,
+} = await import('./utils/djangoUtils.js');
+
 /**
  * @description Main function that kicks off the process for scaffolding the Django application
  * @param options The options coming in from the CLI (process.argv)
@@ -44,7 +44,7 @@ export async function scaffoldDjango(options) {
   ConsoleLogger.printMessage('preparing to scaffold your django project...');
   ConsoleLogger.printMessage('executing scaffoldDjango...');
   // check if we have a project name in options, if not exit
-  const { projectName, withPipenv } = options;
+  const { projectName } = options;
   // TODO: validate projectName based on Django requirements
   if (!validateProjectName(projectName)) {
     output.result =
@@ -72,8 +72,6 @@ export async function scaffoldDjango(options) {
   process.chdir(destination);
 
   ConsoleLogger.printMessage(`in directory:  ${process.cwd()}`);
-  const venvCommand = 'python3 -m virtualenv .venv';
-  const pipenvCommand = PIPENV_COMMAND;
   // create virtual environment
   try {
     await execaCommand(PIPENV_COMMAND).stdout.pipe(process.stdout);
