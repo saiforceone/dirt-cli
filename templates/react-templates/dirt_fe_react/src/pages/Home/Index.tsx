@@ -3,16 +3,22 @@ import {
   BsInfoCircleFill,
   DiReact,
   FaDiscord,
+  FaFileCode,
+  FaFolder,
   FaGithubAlt,
   SiDjango,
   SiTailwindcss,
   SiVite,
   TbShovel,
 } from 'react-icons/all';
+import { projectConfig } from '../../../../@dirt_project/dirt.json';
+import { Note } from '../../components/shared/Note/Note';
 
+const FolderIcon = <FaFolder size={20} />;
 const Index = (): React.ReactNode => {
+  console.log('render projectConfig: ', projectConfig);
   return (
-    <div className="bg-slate-700 flex flex-col gap-y-8 p-2 text-center w-full md:max-w-7xl">
+    <div className="bg-slate-700 flex flex-col gap-y-6 p-2 text-center w-full md:max-w-7xl md:min-w-5xl">
       <TbShovel className="self-center text-white" size={100} />
       <h1 className="text-white text-center text-7xl">
         Ready to get D.I.R.T-y?
@@ -29,25 +35,68 @@ const Index = (): React.ReactNode => {
       <h2 className="text-white text-4xl">Ready to dig in?</h2>
       <div className="flex px-2 py-4 bg-purple-200 border-purple-700 border-2 text-purple-600 rounded items-center gap-x-2">
         <BsInfoCircleFill />
-        <p className="">
+        <p>
           You should replace this page with your own index page in{' '}
           <span className="underline font-semibold text-purple-800">
             dirt_fe_react/pages/Home/Index.tsx
           </span>
         </p>
       </div>
-      <h2 className="text-white text-4xl">Things to consider</h2>
-      <div className="px-2 py-4 bg-purple-200 border-purple-700 border-2 text-purple-600 rounded">
-        <ol>
-          <li>
-            Your pages (InertiaJs views) should be placed dirt_fe_react/pages
-          </li>
-          <li>
-            Django apps can be created as normal using{' '}
-            <span className="italic">django-admin createapp app_name</span>
-          </li>
-        </ol>
+      <h2 className="text-white text-4xl">Important Files & Folders</h2>
+      <div className="flex flex-col px-2 py-2 gap-y-2 bg-purple-200 border-purple-700 border-2 text-purple-600 rounded text-left">
+        <Note
+          iconElement={FolderIcon}
+          labelText="@dirt_project"
+          content="Contains project config / settings"
+        />
+        <Note
+          iconElement={FolderIcon}
+          labelText="dirt_fe_react"
+          content="Contains the React app including pages, components, etc."
+        />
+        <Note
+          iconElement={FolderIcon}
+          labelText="dirt_fe_react/src/pages"
+          content="Contains this application's pages (Inertia views)"
+        />
+        <Note
+          iconElement={FolderIcon}
+          labelText="dirt_fe_react/src/components"
+          content="Contains components used within the application"
+        />
+        <Note
+          iconElement={FolderIcon}
+          labelText={projectConfig.projectName}
+          content="Main Django web application"
+        />
+        <Note
+          iconElement={<FaFileCode size={20} />}
+          labelText="dirt_fe_react/src/main.jsx"
+          content="Main entry point of the Inertia application"
+        />
       </div>
+      {/*<h2>Important Folders</h2>*/}
+      {/*<div className="px-2 py-4 bg-purple-200 border-purple-700 border-2 text-left text-purple-600 rounded">*/}
+      {/*  <p>Here are some folders you should take note of</p>*/}
+      {/*  <div>*/}
+      {/*    <FaFolder size={24} />*/}
+      {/*    <span>*/}
+      {/*      @dirt_project: <span>Contains project settings</span>*/}
+      {/*    </span>*/}
+      {/*  </div>*/}
+      {/*  <div>*/}
+      {/*    <FaFolder size={24} />*/}
+      {/*    <span>*/}
+      {/*      dirt_fe_react: <span>Contains the React web application</span>*/}
+      {/*    </span>*/}
+      {/*  </div>*/}
+      {/*  <div>*/}
+      {/*    <FaFolder size={24} />*/}
+      {/*    <span>*/}
+      {/*      {projectConfig.projectName}: <span>Main Django application</span>*/}
+      {/*    </span>*/}
+      {/*  </div>*/}
+      {/*</div>*/}
       <p className="text-slate-400 text-lg">
         <span className="font-bold text-white">D.I.R.T</span>, truly down to
         earth, built on a solid foundation with
@@ -120,7 +169,7 @@ const Index = (): React.ReactNode => {
           target="_blank"
           href="https://discord.gg/sY3a5VN3y9"
         >
-          <FaDiscord size={32} /> Peanut Cart Express Discord
+          <FaDiscord size={32} /> Peanut Cart Express on Discord
         </a>
       </div>
     </div>
