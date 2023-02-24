@@ -1,9 +1,14 @@
 import ConsoleLogger from './utils/ConsoleLogger.js';
-import {execaCommand} from 'execa';
+import { execaCommand } from 'execa';
+import { writeProjectConfig } from './utils/feUtils.js';
 
-import {standardOutputBuilder} from './utils/standardOutputBuilder.js';
+import { standardOutputBuilder } from './utils/standardOutputBuilder.js';
 import path from 'path';
-import {copyReactFE, copyReactStatic, installCoreReactFEDependencies,} from './utils/reactFEUtils.js';
+import {
+  copyReactFE,
+  copyReactStatic,
+  installCoreReactFEDependencies,
+} from './utils/reactFEUtils.js';
 
 /**
  * @description Main function that kicks off the process for scaffolding the React frontend
@@ -16,6 +21,20 @@ export async function scaffoldReact(options) {
   // if not in the correct directory, then change
   // process.chdir(destination);
   ConsoleLogger.printMessage('Preparing to scaffold React Frontend...');
+
+  ConsoleLogger.printMessage('Writing project configuration files...');
+
+  const projectConfigResults = await writeProjectConfig(
+    { ...options, frontend: 'react' },
+    destination
+  );
+
+  if (!projectConfigResults.success) {
+    return projectConfigResults;
+  }
+
+  ConsoleLogger.printMessage('Done', 'success');
+
   ConsoleLogger.printMessage('Initializing NPM...');
 
   try {
