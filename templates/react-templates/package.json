@@ -7,10 +7,10 @@
     "vite-build": "vite build",
     "vite-dev": "vite",
     "tailwind-dev": "tailwindcss -i ./static/css/main.css -o ./static/dist/css/app.css --watch",
-    "dirt-dev": "concurrently \"npm run tailwind-dev\" \"npm run vite-dev\" ",
+    "dirt-dev": "concurrently -c \"auto\" --names \"django-dev-server,tailwind-css,vite\" \"exec ./manage.py runserver\" \"npm run tailwind-dev\" \"npm run vite-dev\"",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
+  "keywords": ["django", "dirt-cli", "dirt-stack"],
   "author": "",
   "license": "ISC",
   "devDependencies": {

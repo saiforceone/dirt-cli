@@ -6,6 +6,7 @@ import { access, writeFile } from 'node:fs/promises';
 import copy from 'recursive-copy';
 import constants from 'node:constants';
 import {
+  REACT_SB_STORIES_PATH,
   REACT_SB_TEMPLATES_PATH,
   REACT_STATIC_TEMPLATES_PATH,
   REACT_TEMPLATES_PATH,
@@ -130,7 +131,20 @@ export async function copyReactStorybookFiles(destinationBase) {
       FILE_COPY_OPTS
     );
 
-    output.result = `${results.length} Storybook files copied`;
+    const storiesBaseDir = path.resolve(
+      new URL(currentFileUrl).pathname,
+      REACT_SB_STORIES_PATH
+    );
+
+    const storyResults = await copy(
+      storiesBaseDir,
+      path.join(destinationBase, 'dirt_fe_react', 'src'),
+      FILE_COPY_OPTS
+    );
+
+    output.result = `${
+      results.length + storyResults.length
+    } Storybook files & folders copied`;
     output.success = true;
     return output;
   } catch (e) {

@@ -19,7 +19,7 @@ const FolderIcon = <FaFolder size={20} />;
 const Index = (): React.ReactNode => {
   return (
     <div
-      className="flex flex-col gap-y-6 p-2 text-center w-full md:max-w-7xl md:min-w-5xl"
+      className="flex flex-col gap-y-8 text-center w-full p-4 md:p-2 md:max-w-7xl md:min-w-5xl"
       style={{ background: '#2d2d2d' }}
     >
       <TbShovel className="self-center text-white" size={100} />
@@ -36,17 +36,17 @@ const Index = (): React.ReactNode => {
         ailwind CSS.
       </p>
       <h2 className="text-white text-4xl">Ready to dig in?</h2>
-      <div className="flex px-2 py-4 bg-purple-200 border-purple-700 border-2 text-purple-600 rounded items-center gap-x-2">
-        <BsInfoCircleFill />
-        <p>
+      <div className="flex px-2 py-4 bg-green-100 border-green-700 border-2 text-green-900 rounded items-center gap-x-2">
+        <BsInfoCircleFill size={20} />
+        <p className="text-left">
           You should replace this page with your own index page in{' '}
-          <span className="underline font-semibold text-purple-800">
+          <span className="underline font-semibold text-green-900">
             dirt_fe_react/pages/Home/Index.tsx
           </span>
         </p>
       </div>
       <h2 className="text-white text-4xl">Important Files & Folders</h2>
-      <div className="flex flex-col px-2 py-2 gap-y-2 bg-purple-200 border-purple-700 border-2 text-purple-600 rounded text-left">
+      <div className="flex flex-col px-2 py-2 gap-y-2 bg-green-100 border-green-700 border-2 text-green-900 rounded text-left">
         {projectConfig.withStorybook && (
           <Note
             iconElement={FolderIcon}
@@ -89,7 +89,7 @@ const Index = (): React.ReactNode => {
         <span className="font-bold text-white">D.I.R.T</span>, truly down to
         earth, built on a solid foundation with
       </p>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+      <div className="grid grid-cols-2 md:grid-cols-4 px-4 md:px-0 gap-8 md:gap-2">
         <a
           className="w-fit text-white flex items-center gap-x-2"
           target="_blank"
