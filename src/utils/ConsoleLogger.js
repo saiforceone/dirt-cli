@@ -47,4 +47,10 @@ export default class ConsoleLogger {
       )
     );
   }
+
+  static printInfoMessage(message, inProgress = false) {
+    console.log(`${chalk.blue(message)}`);
+  }
+
+  static printSuccessMessage(message) {}
 }

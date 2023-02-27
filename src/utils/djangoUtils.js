@@ -96,9 +96,10 @@ export function getVirtualEnvLocation() {
 /**
  * @description Copies django template data to the destination directory. Overwrites the original manage.py file
  * @param destinationBase
- * @returns {Promise<void>}
+ * @returns {Promise<{error: String, result: *, success: boolean}>}
  */
 export async function copyDjangoSettings(destinationBase) {
+  const output = standardOutputBuilder();
   try {
     const currentFileUrl = import.meta.url;
     const templateBaseDir = path.resolve(
@@ -111,14 +112,14 @@ export async function copyDjangoSettings(destinationBase) {
       overwrite: true,
       dot: true,
     });
-    ConsoleLogger.printMessage(
-      `File copy results: ${results.length} files copied.`,
-      'success'
-    );
+
+    output.success = true;
+    output.result = `File copy results: ${results.length} files copied.`;
+    return output;
   } catch (e) {
-    ConsoleLogger.printMessage(
-      `Failed to copy files with error: ${e.toString()}`
-    );
+    output.result = 'Failed to copy files';
+    output.error = e.toString();
+    return output;
   }
 }
 
@@ -162,22 +163,29 @@ export async function writeBaseSettings(projectName, destination) {
 /**
  * @description Copies inertia specific urls.py and default views file to the project destination
  * @param destinationPath
- * @returns {Promise<void>}
+ * @returns {Promise<{error: String, result: *, success: boolean}>}
  */
 export async function copyInertiaDefaults(destinationPath) {
+  const output = standardOutputBuilder();
+
   try {
     const currentFileUrl = import.meta.url;
+
     const inertiaDefaultsDir = path.resolve(
       new URL(currentFileUrl).pathname,
       INERTIA_DEFAULTS_PATH
     );
+
     const copyResults = await copy(inertiaDefaultsDir, destinationPath, {
       overwrite: true,
     });
-    ConsoleLogger.printMessage(`${copyResults.length} Inertia files copied`);
+
+    output.success = true;
+    output.result = `${copyResults.length} Inertia files copied`;
+    return output;
   } catch (e) {
-    ConsoleLogger.printMessage(
-      `Failed to copy inertia defaults with error: ${e.toString()}`
-    );
+    output.error = e.toString();
+    output.result = 'Failed to copy inertia defaults';
+    return output;
   }
 }

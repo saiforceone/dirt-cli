@@ -1,8 +1,8 @@
 import ConsoleLogger from './utils/ConsoleLogger.js';
-import {execaCommand} from 'execa';
-import {updateNPMAttribs, writeProjectConfig} from './utils/feUtils.js';
+import { execaCommand } from 'execa';
+import { updateNPMAttribs, writeProjectConfig } from './utils/feUtils.js';
 
-import {standardOutputBuilder} from './utils/standardOutputBuilder.js';
+import { standardOutputBuilder } from './utils/standardOutputBuilder.js';
 import path from 'path';
 import {
   copyReactFE,
@@ -18,15 +18,16 @@ import {
  * @param options
  */
 export async function scaffoldReact(options) {
+  const useVerboseLogs = options['verboseLogs'];
   const output = standardOutputBuilder();
   const destination = path.join(process.cwd());
 
   // if not in the correct directory, then change
   // process.chdir(destination);
-  ConsoleLogger.printMessage('Preparing to scaffold React Frontend...');
-
-  ConsoleLogger.printMessage('Writing project configuration files...');
-
+  if (useVerboseLogs) {
+    ConsoleLogger.printMessage('Preparing to scaffold React Frontend...');
+    ConsoleLogger.printMessage('Writing project configuration files...');
+  }
   const projectConfigResults = await writeProjectConfig(
     { ...options, frontend: 'react' },
     destination
@@ -36,63 +37,71 @@ export async function scaffoldReact(options) {
     return projectConfigResults;
   }
 
-  ConsoleLogger.printMessage('Done', 'success');
-
-  ConsoleLogger.printMessage('Initializing NPM...');
+  if (useVerboseLogs) {
+    ConsoleLogger.printMessage('Done', 'success');
+    ConsoleLogger.printMessage('Initializing NPM...');
+  }
 
   try {
     await execaCommand('npm init -y');
   } catch (e) {
-    ConsoleLogger.printMessage(
-      `Failed to initialize NPM with error: ${e.toString()}`,
-      'error'
-    );
+    if (useVerboseLogs)
+      ConsoleLogger.printMessage(
+        `Failed to initialize NPM with error: ${e.toString()}`,
+        'error'
+      );
     output.result = e.toString();
     return output;
   }
 
   const copyReactFilesResults = await copyReactFE(destination);
-  ConsoleLogger.printMessage(
-    copyReactFilesResults.error
-      ? copyReactFilesResults.error
-      : copyReactFilesResults.result,
-    copyReactFilesResults.success ? 'success' : 'error'
-  );
+  if (useVerboseLogs)
+    ConsoleLogger.printMessage(
+      copyReactFilesResults.error
+        ? copyReactFilesResults.error
+        : copyReactFilesResults.result,
+      copyReactFilesResults.success ? 'success' : 'error'
+    );
 
   if (!copyReactFilesResults.success) {
     return copyReactFilesResults;
   }
 
   const copyReactStaticResults = await copyReactStatic(destination);
-  ConsoleLogger.printMessage(
-    copyReactStaticResults.error
-      ? copyReactStaticResults.error
-      : copyReactStaticResults.result,
-    copyReactStaticResults.success ? 'success' : 'error'
-  );
+  if (useVerboseLogs)
+    ConsoleLogger.printMessage(
+      copyReactStaticResults.error
+        ? copyReactStaticResults.error
+        : copyReactStaticResults.result,
+      copyReactStaticResults.success ? 'success' : 'error'
+    );
 
   // update package.json attributes: name, description
-  ConsoleLogger.printMessage('Updating package.json file...');
+  if (useVerboseLogs)
+    ConsoleLogger.printMessage('Updating package.json file...');
 
   const updateNPMBaseResults = await updateNPMAttribs(options, destination);
 
   if (!updateNPMBaseResults.success) return updateNPMBaseResults;
 
-  ConsoleLogger.printMessage(updateNPMBaseResults.result, 'success');
+  if (useVerboseLogs)
+    ConsoleLogger.printMessage(updateNPMBaseResults.result, 'success');
 
-  ConsoleLogger.printMessage(
-    'Installing core D.I.R.T Stack React dependencies...'
-  );
+  if (useVerboseLogs)
+    ConsoleLogger.printMessage(
+      'Installing core D.I.R.T Stack React dependencies...'
+    );
   const installReactDepsResults = await installCoreReactFEDependencies();
 
   if (!installReactDepsResults.success) {
     return output;
   }
 
-  ConsoleLogger.printMessage(`Dependencies installed`, 'success');
+  if (useVerboseLogs)
+    ConsoleLogger.printMessage(`Dependencies installed`, 'success');
 
   if (options['withStorybook']) {
-    ConsoleLogger.printMessage('Setting up Storybook...');
+    if (useVerboseLogs) ConsoleLogger.printMessage('Setting up Storybook...');
     // copy storybook files
     const sbFileCopyResults = await copyReactStorybookFiles(destination);
 
@@ -100,27 +109,32 @@ export async function scaffoldReact(options) {
       return sbFileCopyResults;
     }
 
-    ConsoleLogger.printMessage('Storybook files copied', 'success');
+    if (useVerboseLogs)
+      ConsoleLogger.printMessage('Storybook files copied', 'success');
     // install storybook deps
 
-    ConsoleLogger.printMessage('Installing Storybook dependencies...');
+    if (useVerboseLogs)
+      ConsoleLogger.printMessage('Installing Storybook dependencies...');
 
     const sbInstallDepResults = await installStorybookReactDependencies();
     if (!sbInstallDepResults.success) {
       return sbInstallDepResults;
     }
 
-    ConsoleLogger.printMessage('Storybook dependencies installed', 'success');
+    if (useVerboseLogs)
+      ConsoleLogger.printMessage('Storybook dependencies installed', 'success');
 
     // update the scripts in package.json
-    ConsoleLogger.printMessage('Updating NPM scripts for Storybook...');
+    if (useVerboseLogs)
+      ConsoleLogger.printMessage('Updating NPM scripts for Storybook...');
 
     const sbUpdatePkgResults = await updateNPMScriptsForStorybook(destination);
     if (!sbUpdatePkgResults.success) {
       return sbUpdatePkgResults;
     }
 
-    ConsoleLogger.printMessage('Updated NPM scripts', 'success');
+    if (useVerboseLogs)
+      ConsoleLogger.printMessage('Updated NPM scripts', 'success');
   }
 
   output.result = 'React Application Scaffolded...';

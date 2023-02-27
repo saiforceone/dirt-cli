@@ -30,13 +30,15 @@
   },
   "homepage": "https://github.com/saiforceone/dirt-cli#readme",
   "dependencies": {
-    "@types/ascii-art": "^1.4.0",
+    "@types/gradient-string": "^1.1.2",
     "arg": "^5.0.2",
-    "ascii-art": "^2.8.5",
     "chalk": "^5.2.0",
+    "cli-spinners": "^2.7.0",
     "crypto-random-string": "^5.0.0",
     "execa": "^6.1.0",
+    "gradient-string": "^2.0.2",
     "inquirer": "^9.1.4",
+    "ora": "^6.1.2",
     "recursive-copy": "^2.0.14"
   },
   "devDependencies": {
