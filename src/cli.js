@@ -4,54 +4,44 @@ import ConsoleLogger from './utils/ConsoleLogger.js';
 
 const { scaffoldDjango } = await import('./scaffoldDjango.js');
 const { scaffoldReact } = await import('./scaffoldReact.js');
+import { preScaffold } from './preScaffold.js';
 import { postScaffold } from './postScaffold.js';
+import { validateProjectName } from './utils/validateProjectName.js';
 
 /**
- * @description Parses CLI arguments and returns a convenient object we can use
- * @param rawArgs
- * @returns {{withPipenv: boolean, projectName: string, withStorybook: boolean}}
+ * @description Prompt the user when setting up a new DIRT Stack project
+ * @returns {Promise<*>}
  */
-function parseArgs(rawArgs) {
-  const args = arg(
+async function cliPrompts() {
+  const prompts = [
     {
-      '--frontend': String,
-      '--withStorybook': Boolean,
-      '--withPipenv': Boolean,
-      '--sb': '--withStorybook',
-      '--fe': '--frontend',
+      message: 'What should we call this project?',
+      name: 'projectName',
+      type: 'input',
+      validate: function (input) {
+        return !!validateProjectName(input) ? true : 'Not a valid project name';
+      },
     },
     {
-      argv: rawArgs.slice(2),
-    }
-  );
-
-  return {
-    projectName: args._[0],
-    withStorybook: args['--withStorybook'] || false,
-    withPipenv: args['--withPipenv'] || false,
-    frontend: args['--frontend'] || 'react',
-  };
-}
-
-/**
- * @description Triggers the prompt if the user has forgotten to enter the project name
- * @param options
- * @returns {Promise<*&{projectName: *}>}
- */
-async function promptForMissingOpts(options) {
-  const prompts = [];
-  if (!options['projectName']) {
-    prompts.push({
-      type: 'string',
-      name: 'projectName',
-      message: 'What should we call this project? (no spaces, no dashes)',
-    });
-  }
-  const answers = await inquirer.prompt(prompts);
-  return {
-    ...options,
-    projectName: options.projectName || answers.projectName,
-  };
+      choices: ['react'],
+      message: 'Select a frontend framework / library',
+      name: 'frontend',
+      type: 'list',
+    },
+    {
+      default: false,
+      message: 'Would you like to use StorybookJS?',
+      name: 'withStorybook',
+      type: 'confirm',
+    },
+    {
+      default: false,
+      message: 'Would you like to have git initialized?',
+      name: 'initializeGit',
+      type: 'confirm',
+    },
+  ];
+  return await inquirer.prompt(prompts);
 }
 
 /**
@@ -61,8 +51,8 @@ async function promptForMissingOpts(options) {
  * @returns {Promise<void>}
  */
 export async function cli(args) {
-  let options = parseArgs(args);
-  options = await promptForMissingOpts(options);
+  preScaffold();
+  let options = await cliPrompts();
   // print welcome
   ConsoleLogger.printMessage(
     'Preparing to set up your D.I.R.T Stack application...'
