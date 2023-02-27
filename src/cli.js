@@ -4,6 +4,7 @@ import ConsoleLogger from './utils/ConsoleLogger.js';
 
 const { scaffoldDjango } = await import('./scaffoldDjango.js');
 const { scaffoldReact } = await import('./scaffoldReact.js');
+import { postScaffold } from './postScaffold.js';
 
 /**
  * @description Parses CLI arguments and returns a convenient object we can use
@@ -13,9 +14,11 @@ const { scaffoldReact } = await import('./scaffoldReact.js');
 function parseArgs(rawArgs) {
   const args = arg(
     {
+      '--frontend': String,
       '--withStorybook': Boolean,
       '--withPipenv': Boolean,
       '--sb': '--withStorybook',
+      '--fe': '--frontend',
     },
     {
       argv: rawArgs.slice(2),
@@ -26,6 +29,7 @@ function parseArgs(rawArgs) {
     projectName: args._[0],
     withStorybook: args['--withStorybook'] || false,
     withPipenv: args['--withPipenv'] || false,
+    frontend: args['--frontend'] || 'react',
   };
 }
 
@@ -69,4 +73,5 @@ export async function cli(args) {
   // Scaffold the React (FE) application
   const reactResult = await scaffoldReact(options);
   ConsoleLogger.printMessage(`React FE Status: ${reactResult.result}`);
+  postScaffold(options);
 }
