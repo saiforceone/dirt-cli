@@ -1,14 +1,14 @@
 import chalk from 'chalk';
-import cliSpinners from 'cli-spinners';
 import inquirer from 'inquirer';
-import { oraPromise } from 'ora';
+import ora from 'ora';
 
 import ConsoleLogger from './utils/ConsoleLogger.js';
-const { scaffoldDjango } = await import('./scaffoldDjango.js');
-const { scaffoldReact } = await import('./scaffoldReact.js');
 import { preScaffold } from './preScaffold.js';
 import { postScaffold } from './postScaffold.js';
 import { validateProjectName } from './utils/validateProjectName.js';
+
+const { scaffoldDjango } = await import('./scaffoldDjango.js');
+const { scaffoldReact } = await import('./scaffoldReact.js');
 
 /**
  * @description Prompt the user when setting up a new DIRT Stack project
@@ -79,12 +79,31 @@ function scaffoldFuncs(logType, options) {
       }
     },
     quietLogs: async function () {
+      const djangoSpinner = ora('Setting up Django...');
+      const frontendSpinner = ora(
+        `Setting up Frontend (${chalk.green(options['frontend'])})...`
+      );
       try {
-        await oraPromise(
-          scaffoldDjango(options),
-          'Setting up Django project...'
-        );
-        await oraPromise(scaffoldReact(options), 'Setting up React project...');
+        djangoSpinner.start();
+        const djangoResult = await scaffoldDjango(options);
+        djangoResult.success
+          ? djangoSpinner.succeed()
+          : djangoSpinner.fail('Failed to setup Django. See below.');
+        if (!djangoResult.success) {
+          console.log(`${chalk.red(`Error: ${djangoResult.error}`)}`);
+          process.exit(1);
+        }
+        frontendSpinner.start();
+        const frontendResult = await scaffoldReact(options);
+        frontendResult.success
+          ? frontendSpinner.succeed()
+          : frontendSpinner.fail('Failed to setup Frontend. See below.');
+        if (!frontendResult.success) {
+          console.log(`
+          ${chalk.red(`Error: ${frontendResult.error}`)}
+          `);
+          process.exit(1);
+        }
       } catch (e) {
         console.log(`
         ${chalk.red(`Failed to scaffold project with error: ${e.toString()}`)}
@@ -100,10 +119,9 @@ function scaffoldFuncs(logType, options) {
 /**
  * @description entry point for the application / util. Scaffolding of the different parts of
  * a D.I.R.T Stack application happens here
- * @param args
  * @returns {Promise<void>}
  */
-export async function cli(args) {
+export async function cli() {
   // print welcome message
   preScaffold();
 
@@ -118,8 +136,7 @@ export async function cli(args) {
   // Scaffolds the Django (core) application and sets up base structure
   const logType = options['verboseLogs'] ? 'noisyLogs' : 'quietLogs';
 
-  console.log(`
-  Setting up project with log mode: ${chalk.blue(
+  console.log(`Setting up project with log mode: ${chalk.blue(
     options['verboseLogs'] ? 'Verbose' : 'Quiet'
   )}
   `);

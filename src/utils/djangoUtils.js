@@ -10,10 +10,10 @@ import {
   INERTIA_DEFAULTS_PATH,
   PIPENV_VENV_COMMAND,
 } from '../constants/djangoConstants.js';
-import ConsoleLogger from './ConsoleLogger.js';
+import { standardOutputBuilder } from './standardOutputBuilder.js';
+
 const require = createRequire(import.meta.url);
 const djangoDependencies = require('../configs/djangoDependencies.json');
-import { standardOutputBuilder } from './standardOutputBuilder.js';
 
 /**
  * @description This function handles the installation of dependencies via Pipenv
@@ -29,7 +29,9 @@ export function installDependencies() {
     const command = `pipenv install ${packageList}`;
     exec(command, (error, stdout, stderr) => {
       if (error) {
-        ConsoleLogger.printMessage(error.message, 'warning');
+        // ConsoleLogger.printMessage(error.message, 'warning');
+        output.error = error.message;
+        reject(output);
       }
       output.success = true;
       output.result = stdout ? stdout : stderr;
@@ -63,7 +65,9 @@ export function createDjangoProject(projectName, pythonExecutable) {
       }
       exec(projectCommand, (pcError, pcStdout, pcStderr) => {
         if (pcError) {
-          ConsoleLogger.printMessage(pcError.message, 'warnging');
+          output.error = pcError.toString();
+          output.result = 'Failed to create Django project.';
+          reject(output);
         }
         output.success = true;
         output.result = pcStdout ? pcStdout : pcStderr;
@@ -127,15 +131,18 @@ export async function copyDjangoSettings(destinationBase) {
  * @description Writes settings for dev mode
  * @param secretKey This serves as Django's secret key
  * @param destination
- * @returns {Promise<void>}
+ * @returns {Promise<{error: String, result: *, success: boolean}>}
  */
 export async function writeDevSettings(secretKey, destination) {
+  const output = standardOutputBuilder();
   try {
     await appendFile(destination, `\nSECRET_KEY = "${secretKey}"`);
+    output.result = 'Dev settings updated';
+    output.success = true;
+    return output;
   } catch (e) {
-    ConsoleLogger.printMessage(
-      `Failed to overwrite settings file with error: ${e.toString()} `
-    );
+    output.error = e.toString();
+    return output;
   }
 }
 
@@ -143,20 +150,22 @@ export async function writeDevSettings(secretKey, destination) {
  * @description Writes updated configuration to base settings
  * @param projectName
  * @param destination
- * @returns {Promise<void>}
+ * @returns {Promise<{error: String, result: *, success: boolean}>}
  */
 export async function writeBaseSettings(projectName, destination) {
+  const output = standardOutputBuilder();
   try {
     await appendFile(
       destination,
       `\nWSGI_APPLICATION = "${projectName}.wsgi.application"`
     );
     await appendFile(destination, `\nROOT_URLCONF = "${projectName}.urls"`);
+    output.result = 'Base settings updated';
+    output.success = true;
+    return output;
   } catch (e) {
-    ConsoleLogger.printMessage(
-      `Failed to overwrite vase settings with error: ${e.toString()}`,
-      'error'
-    );
+    output.error = e.toString();
+    return output;
   }
 }
 

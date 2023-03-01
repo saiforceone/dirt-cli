@@ -43,7 +43,7 @@ export async function scaffoldDjango(options) {
   const useVerboseLogs = options['verboseLogs'];
   const output = standardOutputBuilder();
   if (useVerboseLogs) {
-    ConsoleLogger.printInfoMessage('Setting up Django project...');
+    ConsoleLogger.printMessage('Setting up Django project...');
     ConsoleLogger.printMessage('executing scaffoldDjango...');
   }
   // check if we have a project name in options, if not exit
@@ -81,14 +81,18 @@ export async function scaffoldDjango(options) {
     await execaCommand(PIPENV_COMMAND).stdout.pipe(process.stdout);
     // Kick off the dependency installation
     const installDepsResults = await installDependencies();
-    if (useVerboseLogs) {
-      const installDepsMessage = installDepsResults.success
-        ? 'Django dependencies successfully installed'
-        : `Django dependencies were not installed. Error information: ${installDepsResults.result}`;
-      ConsoleLogger.printMessage(
-        installDepsMessage,
-        installDepsResults.success ? 'success' : 'error'
-      );
+
+    if (!installDepsResults.success) {
+      if (useVerboseLogs) {
+        const installDepsMessage = installDepsResults.success
+          ? 'Django dependencies successfully installed'
+          : `Django dependencies were not installed. Error information: ${installDepsResults.result}`;
+        ConsoleLogger.printMessage(
+          installDepsMessage,
+          installDepsResults.success ? 'success' : 'error'
+        );
+      }
+      return installDepsResults;
     }
 
     // Determine environment of the related virtual environment
@@ -110,15 +114,19 @@ export async function scaffoldDjango(options) {
       projectName,
       pythonExecutable
     );
-    if (useVerboseLogs)
-      ConsoleLogger.printMessage(
-        `Django project was ${
-          createProjectResult.success
-            ? 'created successfully'
-            : 'was not created successfully.'
-        }`,
-        createProjectResult.success ? 'success' : 'error'
-      );
+
+    if (!createProjectResult.success) {
+      if (useVerboseLogs)
+        ConsoleLogger.printMessage(
+          `Django project was ${
+            createProjectResult.success
+              ? 'created successfully'
+              : 'was not created successfully.'
+          }`,
+          createProjectResult.success ? 'success' : 'error'
+        );
+      return createProjectResult;
+    }
 
     // copy settings template
     if (useVerboseLogs)
@@ -217,7 +225,11 @@ export async function scaffoldDjango(options) {
     output.result = 'Django project created successfully.';
     return output;
   } catch (e) {
-    output.result = `Failed to scaffold Django project with error: ${e.message}`;
+    if (useVerboseLogs) {
+      ConsoleLogger.printMessage(`Django scaffold error: ${e.error}`, 'error');
+    }
+    output.error = `Django scaffold error: ${e.error}`;
+    output.success = false;
     return output;
   }
 }

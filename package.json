@@ -6,7 +6,7 @@
     "@saiforceone/create-dirt-stack": "bin/create-dirt-stack.js",
     "create-dirt-stack": "bin/create-dirt-stack.js"
   },
-  "main": "src/index.js",
+  "main": "src/cli.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -24,14 +24,13 @@
   ],
   "type": "module",
   "author": "SaiForceOne / Sai",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/saiforceone/dirt-cli/issues"
   },
   "homepage": "https://github.com/saiforceone/dirt-cli#readme",
   "dependencies": {
     "@types/gradient-string": "^1.1.2",
-    "arg": "^5.0.2",
     "chalk": "^5.2.0",
     "cli-spinners": "^2.7.0",
     "crypto-random-string": "^5.0.0",

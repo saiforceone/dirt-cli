@@ -3,19 +3,19 @@ import chalk from 'chalk';
 const messageConfigs = (configName) => {
   const configs = {
     error: {
-      icon: '❌',
+      icon: '[ohno]',
       color: 'red',
     },
     info: {
-      icon: 'ℹ️ ',
+      icon: '[info]',
       color: 'cyan',
     },
     success: {
-      icon: '✅',
+      icon: '[yass]',
       color: 'green',
     },
     warning: {
-      icon: '⚠️ ',
+      icon: '[warn]',
       color: 'yellow',
     },
   };
@@ -34,23 +34,11 @@ export default class ConsoleLogger {
    * @param {string} configName
    */
   static printMessage(message, configName = 'info') {
-    const logTime = new Date();
-
-    const formattedDate = new Intl.DateTimeFormat('en-US', {
-      dateStyle: 'short',
-      timeStyle: 'short',
-    }).format(logTime);
     const config = messageConfigs(configName);
     console.log(
       chalk[config['color']](
-        `${config['icon']} [${formattedDate}] » ${message}`
+        `${chalk.bold.bgBlack(config['icon'])} » ${message}`
       )
     );
   }
-
-  static printInfoMessage(message, inProgress = false) {
-    console.log(`${chalk.blue(message)}`);
-  }
-
-  static printSuccessMessage(message) {}
 }
