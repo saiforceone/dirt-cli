@@ -6,6 +6,7 @@ import ConsoleLogger from './utils/ConsoleLogger.js';
 import { preScaffold } from './preScaffold.js';
 import { postScaffold } from './postScaffold.js';
 import { validateProjectName } from './utils/validateProjectName.js';
+import { setupGitRepo } from './setupGitRepo.js';
 
 const { scaffoldDjango } = await import('./scaffoldDjango.js');
 const { scaffoldReact } = await import('./scaffoldReact.js');
@@ -77,12 +78,25 @@ function scaffoldFuncs(logType, options) {
       if (!reactResult.success) {
         process.exit(1);
       }
+
+      if (options['initializeGit']) {
+        ConsoleLogger.printMessage('Initializing git...');
+        const gitResult = await setupGitRepo();
+
+        ConsoleLogger.printMessage(
+          gitResult.success
+            ? 'Done'
+            : 'Failed to initialize git. You might want to try running the command yourself',
+          gitResult.success ? 'success' : 'warning'
+        );
+      }
     },
     quietLogs: async function () {
       const djangoSpinner = ora('Setting up Django...');
       const frontendSpinner = ora(
         `Setting up Frontend (${chalk.green(options['frontend'])})...`
       );
+      const gitSpinner = ora('Setting up git in your project...');
       try {
         djangoSpinner.start();
         const djangoResult = await scaffoldDjango(options);
@@ -103,6 +117,14 @@ function scaffoldFuncs(logType, options) {
           ${chalk.red(`Error: ${frontendResult.error}`)}
           `);
           process.exit(1);
+        }
+
+        if (options['initializeGit']) {
+          gitSpinner.start();
+          const gitResult = await setupGitRepo();
+          gitResult.success
+            ? gitSpinner.succeed()
+            : gitSpinner.warn(gitResult.error);
         }
       } catch (e) {
         console.log(`
