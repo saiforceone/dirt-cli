@@ -28,10 +28,18 @@ The DIRT CLI has the following requirements
 The DIRT-CLI makes it very easy to create a project
 
 ```shell
-# Run the command using NPX
-npx @saiforceone/create-dirt-stack
+# Run the command using NPX (this may change in the future)
+npx @saiforceone/dirt-cli
 ```
-and answer the prompts.
+and answer the prompts. For an example, see below
+
+```shell
+? What should we call this project? testproj
+? Select a frontend framework / library react
+? Would you like to use StorybookJS? No
+? Would you like to have git initialized? No
+? Show verbose logs? No
+```
 
 Once the scaffolding of your project is complete, navigate to the directory and run the following
 ```shell
