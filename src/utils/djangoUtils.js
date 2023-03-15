@@ -1,4 +1,5 @@
 import { exec } from 'child_process';
+import { $ } from 'execa';
 import fs from 'fs';
 import constants from 'constants';
 import path from 'path';
@@ -8,12 +9,74 @@ import copy from 'recursive-copy';
 import {
   DJANGO_TEMPLATES_PATH,
   INERTIA_DEFAULTS_PATH,
+  PIPENV_COMMAND,
   PIPENV_VENV_COMMAND,
 } from '../constants/djangoConstants.js';
 import { standardOutputBuilder } from './standardOutputBuilder.js';
+import ConsoleLogger from './ConsoleLogger.js';
 
 const require = createRequire(import.meta.url);
 const djangoDependencies = require('../configs/djangoDependencies.json');
+
+/** @deprecated */
+export function initPipenv() {
+  const output = standardOutputBuilder();
+  return new Promise((resolve, reject) => {
+    exec(PIPENV_COMMAND, { windowsHide: true }, (error, stdout, stderr) => {
+      console.log('stdout: ', stdout);
+      console.error('stderr: ', stderr);
+      console.error('err: ', error);
+      if (error) {
+        ConsoleLogger.printMessage(error.message, 'warning');
+        output.error = error.message;
+        reject(output);
+      }
+      output.success = true;
+      output.result = stdout ? stdout : stderr;
+      resolve(output);
+    });
+  });
+}
+
+export async function installWinDepsV2() {
+  const output = standardOutputBuilder();
+  try {
+    const { stdout: pipenvOut } = await $({
+      windowsHide: true,
+    })`${PIPENV_COMMAND}`;
+    console.log('pipenv out: ', pipenvOut);
+    console.log('getting venv');
+    const { stdout } = await $`${PIPENV_VENV_COMMAND}`;
+    console.log('installWinDepsV2 stdout: ', stdout);
+    output.success = true;
+    return output;
+  } catch (e) {
+    output.error = e.toString();
+    return output;
+  }
+}
+
+export function installDependenciesWindows() {
+  const output = standardOutputBuilder();
+  return new Promise((resolve, reject) => {
+    const packageList = Object.keys(djangoDependencies.packages)
+      .map((pkg) => `${pkg}==${djangoDependencies.packages[pkg]}`)
+      .join(' ');
+    const command = `pipenv install ${packageList}`;
+    console.log('executing command: ', command);
+    exec(command, { timeout: 10000 }, (error, stdout, stderr) => {
+      console.log('stdout: ', stdout);
+      if (error) {
+        // ConsoleLogger.printMessage(error.message, 'warning');
+        output.error = error.message;
+        reject(output);
+      }
+      output.success = true;
+      output.result = stdout ? stdout : stderr;
+      resolve(output);
+    });
+  });
+}
 
 /**
  * @description This function handles the installation of dependencies via Pipenv
@@ -110,6 +173,9 @@ export async function copyDjangoSettings(destinationBase) {
       new URL(currentFileUrl).pathname,
       DJANGO_TEMPLATES_PATH
     );
+
+    console.log('currentFileUrl: ', currentFileUrl);
+    console.log('templateBaseDirectory: ', templateBaseDir);
 
     await access(destinationBase, constants.W_OK);
     const results = await copy(templateBaseDir, destinationBase, {

@@ -41,4 +41,12 @@ export default class ConsoleLogger {
       )
     );
   }
+
+  /**
+   * @description Prints out a message from the standard output object
+   * @param output
+   */
+  static printOutput(output) {
+    this.printMessage(output.result, output.success ? 'success' : 'error');
+  }
 }
