@@ -14,6 +14,8 @@ import {
 } from '../constants/djangoConstants.js';
 import { standardOutputBuilder } from './standardOutputBuilder.js';
 import ConsoleLogger from './ConsoleLogger.js';
+import { platform } from 'os';
+import { normalizeWinFilePath } from './fileUtils.js';
 
 const require = createRequire(import.meta.url);
 const djangoDependencies = require('../configs/djangoDependencies.json');
@@ -169,13 +171,13 @@ export async function copyDjangoSettings(destinationBase) {
   const output = standardOutputBuilder();
   try {
     const currentFileUrl = import.meta.url;
-    const templateBaseDir = path.resolve(
-      new URL(currentFileUrl).pathname,
+    let templateBaseDir = path.resolve(
+      path.normalize(new URL(currentFileUrl).pathname),
       DJANGO_TEMPLATES_PATH
     );
 
-    console.log('currentFileUrl: ', currentFileUrl);
-    console.log('templateBaseDirectory: ', templateBaseDir);
+    if (platform() === 'win32')
+      templateBaseDir = normalizeWinFilePath(templateBaseDir);
 
     await access(destinationBase, constants.W_OK);
     const results = await copy(templateBaseDir, destinationBase, {
@@ -246,10 +248,13 @@ export async function copyInertiaDefaults(destinationPath) {
   try {
     const currentFileUrl = import.meta.url;
 
-    const inertiaDefaultsDir = path.resolve(
-      new URL(currentFileUrl).pathname,
+    let inertiaDefaultsDir = path.resolve(
+      path.normalize(new URL(currentFileUrl).pathname),
       INERTIA_DEFAULTS_PATH
     );
+
+    if (platform() === 'win32')
+      inertiaDefaultsDir = normalizeWinFilePath(inertiaDefaultsDir);
 
     const copyResults = await copy(inertiaDefaultsDir, destinationPath, {
       overwrite: true,

@@ -1,16 +1,25 @@
 import path from 'node:path';
 import { $ } from 'execa';
 import {
+  BASE_PY_FILENAME,
   DEV_PY_FILENAME,
   DIRT_SETTINGS_FOLDER,
+  GIT_IGNORE_FILENAME,
+  GIT_IGNORE_TEMPLATE_FILE,
+  MANAGE_PY_FILENAME,
+  MANAGE_PY_MODE,
   PIPENV_COMMAND,
+  SETTINGS_PY_FILE,
+  STATIC_FOLDER_NAME,
 } from '../../constants/djangoConstants.js';
 import { standardOutputBuilder } from '../../utils/standardOutputBuilder.js';
 import {
   copyDjangoSettings,
+  copyInertiaDefaults,
   createDjangoProject,
   getVirtualEnvLocation,
   installDependencies,
+  writeBaseSettings,
   writeDevSettings,
 } from '../../utils/djangoUtils.js';
 import ConsoleLogger from '../../utils/ConsoleLogger.js';
@@ -21,6 +30,7 @@ import {
   MESSAGE_SETTING_SECRET_KEY,
 } from '../../constants/strings.js';
 import { generateSecretKey } from '../../utils/generateSecretKey.js';
+import { chmod, mkdir, rename, unlink } from 'node:fs/promises';
 
 const STDIO_OPTS = Object.freeze({ stdio: 'ignore' });
 
@@ -97,7 +107,85 @@ export async function scaffoldDjangoWindows(options, destination) {
   const secretKeyResult = await writeDevSettings(secretKey, devSettingsPath);
   if (useVerboseLogs) ConsoleLogger.printOutput(secretKeyResult);
   if (!secretKeyResult.success) return secretKeyResult;
-  ConsoleLogger.printMessage(MESSAGE_SECRET_KEY_SET);
+  if (useVerboseLogs) ConsoleLogger.printMessage(MESSAGE_SECRET_KEY_SET);
+
+  // update base settings file
+  const baseSettingsPath = path.join(
+    destination,
+    DIRT_SETTINGS_FOLDER,
+    BASE_PY_FILENAME
+  );
+  if (useVerboseLogs)
+    ConsoleLogger.printMessage('Updating Django application base settings...');
+  await writeBaseSettings(projectName, baseSettingsPath);
+  if (useVerboseLogs)
+    ConsoleLogger.printMessage(
+      'Successfully updated Django application base settings',
+      'success'
+    );
+
+  // 7.4 delete generated settings file
+  if (useVerboseLogs)
+    ConsoleLogger.printMessage(
+      "Removing default settings.py file (we won't need it anymore, trust me...)"
+    );
+
+  const originalSettingsFilePath = path.join(
+    destination,
+    projectName,
+    SETTINGS_PY_FILE
+  );
+
+  try {
+    await unlink(originalSettingsFilePath);
+
+    if (useVerboseLogs)
+      ConsoleLogger.printMessage('Removed default settings file', 'success');
+  } catch (e) {
+    ConsoleLogger.printMessage(e.toString(), 'error');
+    output.error = e.toString();
+    return output;
+  }
+
+  // rename git ignore file
+  const originalIgnorePath = path.join(destination, GIT_IGNORE_TEMPLATE_FILE);
+  const newIgnorePath = path.join(destination, GIT_IGNORE_FILENAME);
+  if (useVerboseLogs) ConsoleLogger.printMessage('Renaming ignore file...');
+  await rename(originalIgnorePath, newIgnorePath);
+  if (useVerboseLogs)
+    ConsoleLogger.printMessage(
+      'Ignore file was renamed. You may update this .gitignore file as you see fit',
+      'success'
+    );
+
+  // overwrite urls.py and views.py in base project
+  const projectPath = path.join(destination, projectName);
+  if (useVerboseLogs)
+    ConsoleLogger.printMessage(
+      'Copying default D.I.R.T Stack Inertia files...'
+    );
+  await copyInertiaDefaults(projectPath);
+  if (useVerboseLogs)
+    ConsoleLogger.printMessage('Successfully copied files', 'success');
+
+  if (useVerboseLogs)
+    ConsoleLogger.printMessage(
+      'Making project runnable by updating manage.py permissions...'
+    );
+  // change permissions of manage.py so that we can run it
+  // check if on windows on *Nix
+  const managePyPath = path.join(destination, MANAGE_PY_FILENAME);
+  await chmod(managePyPath, MANAGE_PY_MODE);
+  if (useVerboseLogs)
+    ConsoleLogger.printMessage(
+      'Permissions updated. Project now runnable',
+      'success'
+    );
+  // create additional folders
+  if (useVerboseLogs) ConsoleLogger.printMessage('Creating static folder....');
+  const staticFolderPath = path.join(destination, STATIC_FOLDER_NAME);
+  await mkdir(staticFolderPath);
+  if (useVerboseLogs) ConsoleLogger.printMessage('Folder created', 'success');
 
   // finally, return output
   output.success = true;

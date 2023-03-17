@@ -18,6 +18,8 @@ import {
   STORYBOOK_SCRIPT_DEV_PRE,
 } from '../constants/feConstants.js';
 import { getPackageFile } from './feUtils.js';
+import { normalizeWinFilePath } from './fileUtils.js';
+import os from 'os';
 
 const FILE_COPY_OPTS = Object.freeze({
   overwrite: true,
@@ -56,10 +58,13 @@ export async function copyReactStatic(destinationBase) {
   const output = standardOutputBuilder();
   try {
     const currentFileUrl = import.meta.url;
-    const templateBaseDir = path.resolve(
+    let templateBaseDir = path.resolve(
       new URL(currentFileUrl).pathname,
       REACT_STATIC_TEMPLATES_PATH
     );
+
+    if (os.platform() === 'win32')
+      templateBaseDir = normalizeWinFilePath(templateBaseDir);
 
     await access(destinationBase, constants.W_OK);
     const results = await copy(
@@ -86,10 +91,13 @@ export async function copyReactFE(destinationBase) {
   const output = standardOutputBuilder();
   try {
     const currentFileUrl = import.meta.url;
-    const templateBaseDir = path.resolve(
-      new URL(currentFileUrl).pathname,
+    let templateBaseDir = path.resolve(
+      path.normalize(new URL(currentFileUrl).pathname),
       REACT_TEMPLATES_PATH
     );
+
+    if (os.platform() === 'win32')
+      templateBaseDir = normalizeWinFilePath(templateBaseDir);
 
     await access(destinationBase, constants.W_OK);
 
@@ -118,10 +126,13 @@ export async function copyReactStorybookFiles(destinationBase) {
   const output = standardOutputBuilder();
   try {
     const currentFileUrl = import.meta.url;
-    const templateBaseDir = path.resolve(
+    let templateBaseDir = path.resolve(
       new URL(currentFileUrl).pathname,
       REACT_SB_TEMPLATES_PATH
     );
+
+    if (os.platform() === 'win32')
+      templateBaseDir = normalizeWinFilePath(templateBaseDir);
 
     await access(destinationBase, constants.W_OK);
 
@@ -131,10 +142,13 @@ export async function copyReactStorybookFiles(destinationBase) {
       FILE_COPY_OPTS
     );
 
-    const storiesBaseDir = path.resolve(
-      new URL(currentFileUrl).pathname,
+    let storiesBaseDir = path.resolve(
+      path.normalize(new URL(currentFileUrl).pathname),
       REACT_SB_STORIES_PATH
     );
+
+    if (os.platform() === 'win32')
+      storiesBaseDir = normalizeWinFilePath(storiesBaseDir);
 
     const storyResults = await copy(
       storiesBaseDir,

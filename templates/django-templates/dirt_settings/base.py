@@ -52,8 +52,6 @@ MIDDLEWARE = [
     "inertia.middleware.InertiaMiddleware"
 ]
 
-ROOT_URLCONF = "dirt_tutorial.urls"
-
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
