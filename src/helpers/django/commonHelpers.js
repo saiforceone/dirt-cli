@@ -82,7 +82,8 @@ export async function scaffoldDjangoProcess(options, destination) {
       ? path.join(pipenvLoc, 'Scripts', 'python.exe')
       : path.join(pipenvLoc, 'bin', 'python3');
 
-  ConsoleLogger.printMessage(`Using python executable: ${pythonExecutable}`);
+  if (useVerboseLogs)
+    ConsoleLogger.printMessage(`Using python executable: ${pythonExecutable}`);
 
   // 5. create django project
   try {
