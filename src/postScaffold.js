@@ -1,11 +1,10 @@
 import chalk from 'chalk';
-import ConsoleLogger from './utils/ConsoleLogger.js';
 
 /**
  * @description Prints out information after the scaffolding process has completed including
  * information like what to do next, where to get help, etc
  * @param options
- * @returns {Promise<void>}
+ * @returns {void}
  */
 export function postScaffold(options) {
   const storybookInstructions = `

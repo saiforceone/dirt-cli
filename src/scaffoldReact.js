@@ -1,9 +1,10 @@
-import ConsoleLogger from './utils/ConsoleLogger.js';
+import os from 'node:os';
+import path from 'node:path';
 import { execaCommand } from 'execa';
-import { updateNPMAttribs, writeProjectConfig } from './utils/feUtils.js';
 
+import ConsoleLogger from './utils/ConsoleLogger.js';
+import { updateNPMAttribs, writeProjectConfig } from './utils/feUtils.js';
 import { standardOutputBuilder } from './utils/standardOutputBuilder.js';
-import path from 'path';
 import {
   copyReactFE,
   copyReactStatic,
@@ -12,6 +13,7 @@ import {
   installStorybookReactDependencies,
   updateNPMScriptsForStorybook,
 } from './utils/reactFEUtils.js';
+import { updateNPMScriptsWin32 } from './helpers/shared/win32FEHelpers.js';
 
 /**
  * @description Main function that kicks off the process for scaffolding the React frontend
@@ -99,6 +101,15 @@ export async function scaffoldReact(options) {
 
   if (useVerboseLogs)
     ConsoleLogger.printMessage(`Dependencies installed`, 'success');
+
+  if (os.platform() === 'win32') {
+    // update package json file for windows
+    if (useVerboseLogs)
+      ConsoleLogger.printMessage('Updating NPM Scripts (dirt-dev)...');
+    const updateNpmScriptResult = await updateNPMScriptsWin32(destination);
+    if (useVerboseLogs) ConsoleLogger.printOutput(updateNpmScriptResult);
+    if (!updateNpmScriptResult.success) return updateNpmScriptResult;
+  }
 
   if (options['withStorybook']) {
     if (useVerboseLogs) ConsoleLogger.printMessage('Setting up Storybook...');

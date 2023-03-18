@@ -9,3 +9,6 @@ export const STORYBOOK_SCRIPT_DEV =
 export const STORYBOOK_SCRIPT_BUILD = 'build-storybook';
 
 export const PACKAGE_JSON_FILE = 'package.json';
+
+export const DIRT_DEV_SCRIPT_WINDOWS =
+  'concurrently -c "auto" --names "dirt-backend,tailwind-css,dirt-frontend" "py manage.py runserver" "npm run tailwind-dev" "npm run vite-dev"';

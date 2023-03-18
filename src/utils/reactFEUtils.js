@@ -107,7 +107,7 @@ export async function copyReactFE(destinationBase) {
       FILE_COPY_OPTS
     );
 
-    output.result = `${results.length} React files copied`;
+    output.result = `${results.length} React resources copied`;
     output.success = true;
     return output;
   } catch (e) {

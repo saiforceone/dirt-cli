@@ -11,6 +11,7 @@ import {
   PIPENV_COMMAND,
   SETTINGS_PY_FILE,
   STATIC_FOLDER_NAME,
+  STDIO_OPTS,
 } from '../../constants/djangoConstants.js';
 import { standardOutputBuilder } from '../../utils/standardOutputBuilder.js';
 import {
@@ -32,8 +33,6 @@ import {
 import { generateSecretKey } from '../../utils/generateSecretKey.js';
 import { chmod, mkdir, rename, unlink } from 'node:fs/promises';
 
-const STDIO_OPTS = Object.freeze({ stdio: 'ignore' });
-
 /**
  * @async
  * @description executes windows-specific commands to scaffold the Django application
@@ -41,8 +40,8 @@ const STDIO_OPTS = Object.freeze({ stdio: 'ignore' });
  * @param {string} destination
  * @returns {Promise<{error: String, result: *, success: boolean}>}
  */
-export async function scaffoldDjangoWindows(options, destination) {
-  const { projectName, useVerboseLogs } = options;
+export async function scaffoldDjangoProcess(options, destination) {
+  const { projectName, verboseLogs: useVerboseLogs } = options;
   const output = standardOutputBuilder();
   // 1. init pipenv's shell
   await $(STDIO_OPTS)`${PIPENV_COMMAND}`;
