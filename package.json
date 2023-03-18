@@ -1,6 +1,6 @@
 {
   "name": "@saiforceone/dirt-cli",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "description": "Official CLI Utility for the D.I.R.T stack",
   "bin": {
     "@saiforceone/create-dirt-stack": "bin/create-dirt-stack.js",
