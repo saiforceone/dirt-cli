@@ -42,9 +42,17 @@ import { chmod, mkdir, rename, unlink } from 'node:fs/promises';
  */
 export async function scaffoldDjangoProcess(options, destination) {
   const { projectName, verboseLogs: useVerboseLogs } = options;
+
   const output = standardOutputBuilder();
+
   // 1. init pipenv's shell
-  await $(STDIO_OPTS)`${PIPENV_COMMAND}`;
+  try {
+    await $(STDIO_OPTS)`${PIPENV_COMMAND}`;
+  } catch (e) {
+    output.result = 'Failed to start virtual environment. Will exit now';
+    output.error = e.toString();
+    return output;
+  }
 
   // 2. install dependencies
   const installDepsResult = await installDependencies();

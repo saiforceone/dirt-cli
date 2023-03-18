@@ -6,7 +6,7 @@ ______ ___________ _____   _____  _     _____
 | |/ / _| |_| |\ \  | |   | \__/\| |_____| |_ 
 |___/  \___/\_| \_| \_/    \____/\_____/\___/ 
 ```
-# D.I.R.T Stack CLI / D.I.R.T CLI
+# D.I.R.T Stack CLI / D.I.R.T CLI (Alpha)
 __Note:__ This is a work-in-progress and will be updated with more useful information
 
 Official CLI Utility for the D.I.R.T stack
@@ -21,7 +21,8 @@ The DIRT CLI has the following requirements
 
 ## Things to keep in mind
 * This is a very early version of the CLI
-* This CLI has only been tested on __MacOS__ and __Linux (Ubuntu)__. I think it should work on __Windows__ but haven't tested it yet.
+* New features will be added
+* This CLI has been tested on __MacOS__, __Linux (Ubuntu)__ and now, __Windows__.
 
 ## Creating a DIRT Stack Application
 
