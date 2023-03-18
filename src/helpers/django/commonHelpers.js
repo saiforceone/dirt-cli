@@ -1,5 +1,6 @@
+import os from 'node:os';
 import path from 'node:path';
-import { $ } from 'execa';
+import { $, execaCommand } from 'execa';
 import {
   BASE_PY_FILENAME,
   DEV_PY_FILENAME,
@@ -46,12 +47,16 @@ export async function scaffoldDjangoProcess(options, destination) {
   const output = standardOutputBuilder();
 
   // 1. init pipenv's shell
-  try {
-    await $(STDIO_OPTS)`${PIPENV_COMMAND}`;
-  } catch (e) {
-    output.result = 'Failed to start virtual environment. Will exit now';
-    output.error = e.toString();
-    return output;
+  if (os.platform() === 'win32') {
+    try {
+      await $(STDIO_OPTS)`${PIPENV_COMMAND}`;
+    } catch (e) {
+      output.result = 'Failed to start virtual environment. Will exit now';
+      output.error = e.toString();
+      return output;
+    }
+  } else {
+    await execaCommand(PIPENV_COMMAND).stdout.pipe(process.stdout);
   }
 
   // 2. install dependencies
@@ -71,11 +76,11 @@ export async function scaffoldDjangoProcess(options, destination) {
   }
 
   // 4. build path to python executable
-  const pythonExecutable = path.join(
-    String(pipenvLocResult.result).trim(),
-    'Scripts',
-    'python.exe'
-  );
+  const pipenvLoc = String(pipenvLocResult.result).trim();
+  const pythonExecutable =
+    os.platform() === 'win32'
+      ? path.join(pipenvLoc, 'Scripts', 'python.exe')
+      : path.join(pipenvLoc, 'bin', 'python3');
 
   ConsoleLogger.printMessage(`Using python executable: ${pythonExecutable}`);
 
