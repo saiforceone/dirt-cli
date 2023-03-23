@@ -16,7 +16,7 @@ ______ ___________ _____   _____  _     _____
 export function preScaffold() {
   console.log(`
  ${gradient.pastel(asciiDirt)}
- ${chalk.green("Let's get D.I.R.T-y...")}\n
+ ${chalk.green("Let's get F.L.I.R.T-y...")}\n
  Before we can scaffold your project, we have a few questions
 `);
 }

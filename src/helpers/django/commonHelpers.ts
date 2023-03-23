@@ -34,6 +34,7 @@ import {
 import { generateSecretKey } from '../../utils/generateSecretKey.js';
 import { chmod, mkdir, rename, unlink } from 'node:fs/promises';
 
+type TODO = any;
 /**
  * @async
  * @description executes windows-specific commands to scaffold the Django application
@@ -60,7 +61,7 @@ export async function scaffoldDjangoProcess(options, destination) {
   }
 
   // 2. install dependencies
-  const installDepsResult = await installDependencies();
+  const installDepsResult: TODO = await installDependencies();
 
   if (!installDepsResult.success) {
     if (useVerboseLogs) ConsoleLogger.printOutput(installDepsResult);
@@ -69,7 +70,7 @@ export async function scaffoldDjangoProcess(options, destination) {
   }
 
   // 3. get venv location
-  const pipenvLocResult = await getVirtualEnvLocation();
+  const pipenvLocResult: TODO = await getVirtualEnvLocation();
   if (useVerboseLogs) ConsoleLogger.printOutput(pipenvLocResult);
   if (!pipenvLocResult.success) {
     return pipenvLocResult;
@@ -87,7 +88,7 @@ export async function scaffoldDjangoProcess(options, destination) {
 
   // 5. create django project
   try {
-    const createDjangoProjResult = await createDjangoProject(
+    const createDjangoProjResult: TODO = await createDjangoProject(
       projectName,
       pythonExecutable
     );

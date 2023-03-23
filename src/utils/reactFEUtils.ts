@@ -3,7 +3,7 @@ import { createRequire } from 'module';
 import { standardOutputBuilder } from './standardOutputBuilder.js';
 import path from 'path';
 import { access, writeFile } from 'node:fs/promises';
-import copy from 'recursive-copy';
+import copy_ from 'recursive-copy';
 import constants from 'node:constants';
 import {
   REACT_SB_STORIES_PATH,
@@ -20,6 +20,8 @@ import {
 import { getPackageFile } from './feUtils.js';
 import { normalizeWinFilePath } from './fileUtils.js';
 import os from 'os';
+type TODO = any;
+let copy: TODO = copy_;
 
 const FILE_COPY_OPTS = Object.freeze({
   overwrite: true,
@@ -27,7 +29,7 @@ const FILE_COPY_OPTS = Object.freeze({
 });
 
 const require = createRequire(import.meta.url);
-const reactStorybookDeps = require('../configs/reactStorybookDependencies.json');
+const reactStorybookDeps = require('../../configs/reactStorybookDependencies.json');
 
 /**
  * @description Helper function that handles installing core react frontend dependencies
@@ -43,7 +45,7 @@ export function installCoreReactFEDependencies() {
       }
 
       output.success = true;
-      output.result = stdout ? stdout : stderr.message;
+      output.result = stdout ? stdout : stderr;
       resolve(output);
     });
   });

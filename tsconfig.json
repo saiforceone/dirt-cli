@@ -1,0 +1,13 @@
+{
+    "compilerOptions": {
+        "module": "node16",
+        "target": "es2020",
+        "lib": ["es2020"],
+        "outDir": "dist",
+        "sourceMap": true,
+        "rootDir": "src",
+        "moduleResolution": "NodeNext"
+    },
+    "include": ["src"],
+    "exclude": ["node_modules"]
+}

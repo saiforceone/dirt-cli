@@ -6,9 +6,12 @@
     "@saiforceone/create-dirt-stack": "bin/create-dirt-stack.js",
     "create-dirt-stack": "bin/create-dirt-stack.js"
   },
-  "main": "src/cli.js",
+  "main": "dist/cli.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "npm i && npm run build && npm run dev",
+    "dev": "tsc -w",
+    "build": "tsc",
+    "prepublish": "npm run build"
   },
   "repository": {
     "type": "git",
@@ -30,7 +33,6 @@
   },
   "homepage": "https://github.com/saiforceone/dirt-cli#readme",
   "dependencies": {
-    "@types/gradient-string": "^1.1.2",
     "chalk": "^5.2.0",
     "cli-spinners": "^2.7.0",
     "crypto-random-string": "^5.0.0",
@@ -41,6 +43,9 @@
     "recursive-copy": "^2.0.14"
   },
   "devDependencies": {
-    "prettier": "^2.8.4"
+    "@types/gradient-string": "^1.1.2",
+    "@types/node": "^18.15.5",
+    "prettier": "^2.8.4",
+    "typescript": "^5.0.2"
   }
 }

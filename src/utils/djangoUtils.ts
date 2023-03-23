@@ -5,7 +5,7 @@ import constants from 'constants';
 import path from 'path';
 import { access, appendFile } from 'node:fs/promises';
 import { createRequire } from 'module';
-import copy from 'recursive-copy';
+import copy_ from 'recursive-copy';
 import {
   DJANGO_TEMPLATES_PATH,
   INERTIA_DEFAULTS_PATH,
@@ -18,7 +18,9 @@ import { platform } from 'os';
 import { normalizeWinFilePath } from './fileUtils.js';
 
 const require = createRequire(import.meta.url);
-const djangoDependencies = require('../configs/djangoDependencies.json');
+const djangoDependencies = require('../../configs/djangoDependencies.json');
+type TODO = any;
+let copy: TODO = copy_;
 
 /** @deprecated */
 export function initPipenv() {

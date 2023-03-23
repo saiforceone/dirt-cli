@@ -14,7 +14,9 @@ import {
   updateNPMScriptsForStorybook,
 } from './utils/reactFEUtils.js';
 import { updateNPMScriptsWin32 } from './helpers/shared/win32FEHelpers.js';
+import copy_ from 'recursive-copy';
 
+type TODO = any;
 /**
  * @description Main function that kicks off the process for scaffolding the React frontend
  * @param options
@@ -93,7 +95,7 @@ export async function scaffoldReact(options) {
     ConsoleLogger.printMessage(
       'Installing core D.I.R.T Stack React dependencies...'
     );
-  const installReactDepsResults = await installCoreReactFEDependencies();
+  const installReactDepsResults: TODO = await installCoreReactFEDependencies();
 
   if (!installReactDepsResults.success) {
     return output;
@@ -127,7 +129,7 @@ export async function scaffoldReact(options) {
     if (useVerboseLogs)
       ConsoleLogger.printMessage('Installing Storybook dependencies...');
 
-    const sbInstallDepResults = await installStorybookReactDependencies();
+    const sbInstallDepResults: TODO = await installStorybookReactDependencies();
     if (!sbInstallDepResults.success) {
       return sbInstallDepResults;
     }

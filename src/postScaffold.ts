@@ -1,4 +1,5 @@
 import chalk from 'chalk';
+import ScaffoldOptions = DIRTStackCLI.ScaffoldOptions;
 
 /**
  * @description Prints out information after the scaffolding process has completed including
@@ -6,7 +7,7 @@ import chalk from 'chalk';
  * @param options
  * @returns {void}
  */
-export function postScaffold(options) {
+export function postScaffold(options: ScaffoldOptions) {
   const storybookInstructions = `
  ${chalk.blue.underline('Running Storybook')}\n
  Since you have used the Storybook option, please see below for instructions:\n

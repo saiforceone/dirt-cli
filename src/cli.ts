@@ -10,6 +10,7 @@ import { setupGitRepo } from './setupGitRepo.js';
 
 const { scaffoldDjango } = await import('./scaffoldDjango.js');
 const { scaffoldReact } = await import('./scaffoldReact.js');
+type TODO = any;
 
 /**
  * @description Prompt the user when setting up a new DIRT Stack project
@@ -71,7 +72,7 @@ function scaffoldFuncs(logType, options) {
       }
 
       // Scaffold the React (FE) application
-      const reactResult = await scaffoldReact(options);
+      const reactResult: TODO = await scaffoldReact(options);
 
       ConsoleLogger.printMessage(`React FE Status: ${reactResult.result}`);
 
@@ -81,7 +82,7 @@ function scaffoldFuncs(logType, options) {
 
       if (options['initializeGit']) {
         ConsoleLogger.printMessage('Initializing git...');
-        const gitResult = await setupGitRepo();
+        const gitResult: TODO = await setupGitRepo();
 
         ConsoleLogger.printMessage(
           gitResult.success
@@ -108,7 +109,7 @@ function scaffoldFuncs(logType, options) {
           process.exit(1);
         }
         frontendSpinner.start();
-        const frontendResult = await scaffoldReact(options);
+        const frontendResult: any = await scaffoldReact(options);
         frontendResult.success
           ? frontendSpinner.succeed()
           : frontendSpinner.fail('Failed to setup Frontend. See below.');
@@ -121,7 +122,7 @@ function scaffoldFuncs(logType, options) {
 
         if (options['initializeGit']) {
           gitSpinner.start();
-          const gitResult = await setupGitRepo();
+          const gitResult: any = await setupGitRepo();
           gitResult.success
             ? gitSpinner.succeed()
             : gitSpinner.warn(gitResult.error);
