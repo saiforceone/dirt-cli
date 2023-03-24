@@ -102,7 +102,12 @@ export async function scaffoldReact(
 
   if (!installReactDepsResults.success) {
     if (useVerboseLogs)
-      ConsoleLogger.printMessage(installReactDepsResults.error, 'error');
+      ConsoleLogger.printMessage(
+        installReactDepsResults.error
+          ? installReactDepsResults.error
+          : 'Install Error',
+        'error'
+      );
     return output;
   }
 

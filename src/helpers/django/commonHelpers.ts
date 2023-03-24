@@ -41,12 +41,11 @@ import ScaffoldOutput = DIRTStackCLI.ScaffoldOutput;
  * @description executes windows-specific commands to scaffold the Django application
  * @param {ScaffoldOptions} options
  * @param {string} destination
- * @returns {Promise<{error: String, result: *, success: boolean}>}
  */
 export async function scaffoldDjangoProcess(
   options: ScaffoldOptions,
   destination: string
-) {
+): Promise<ScaffoldOutput> {
   const { projectName, verboseLogs: useVerboseLogs } = options;
 
   const output = standardOutputBuilder();
@@ -62,7 +61,7 @@ export async function scaffoldDjangoProcess(
     }
   } else {
     try {
-      console.log('before exec...');
+      // @ts-ignore
       await execaCommand(PIPENV_COMMAND).stdout.pipe(process.stdout);
     } catch (e) {
       if (useVerboseLogs)
@@ -71,8 +70,6 @@ export async function scaffoldDjangoProcess(
       return output;
     }
   }
-
-  console.log('before install deps');
 
   // 2. install dependencies
   const installDepsResult: ScaffoldOutput = await installDependencies();

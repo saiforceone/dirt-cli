@@ -6,7 +6,7 @@ import ScaffoldOutput = DIRTStackCLI.ScaffoldOutput;
 export function standardOutputBuilder(): ScaffoldOutput {
   return {
     error: '',
-    result: undefined,
+    result: '',
     success: false,
   };
 }
