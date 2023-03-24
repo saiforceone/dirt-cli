@@ -1,15 +1,23 @@
 import constants from 'node:constants';
 import path from 'node:path';
-import {access, mkdir, readFile, writeFile} from 'node:fs/promises';
-import {standardOutputBuilder} from './standardOutputBuilder.js';
-import {DIRT_PROJECT_CONFIG_FILE_NAME, DIRT_PROJECT_FOLDER_NAME, PACKAGE_JSON_FILE,} from '../constants/feConstants.js';
+import { access, mkdir, readFile, writeFile } from 'node:fs/promises';
+import { standardOutputBuilder } from './standardOutputBuilder.js';
+import {
+  DIRT_PROJECT_CONFIG_FILE_NAME,
+  DIRT_PROJECT_FOLDER_NAME,
+  PACKAGE_JSON_FILE,
+} from '../constants/feConstants.js';
+import ScaffoldOptions = DIRTStackCLI.ScaffoldOptions;
+import ScaffoldOutput = DIRTStackCLI.ScaffoldOutput;
+import DIRTPkgFile = DIRTStackCLI.DIRTPkgFile;
 
 /**
  * @description Helper function that gets the package json file and returns the contents
- * @param destinationPath
- * @returns {Promise<number|any>}
+ * @param {string}destinationPath
  */
-export async function getPackageFile(destinationPath) {
+export async function getPackageFile(
+  destinationPath: string
+): Promise<number | unknown> {
   try {
     const pkgFilePath = path.join(destinationPath, PACKAGE_JSON_FILE);
     const _fileTemp = await readFile(pkgFilePath, { encoding: 'utf8' });
@@ -21,11 +29,13 @@ export async function getPackageFile(destinationPath) {
 
 /**
  * @description Write project configuration details as a json file
- * @param options
- * @param destinationBase
- * @returns {Promise<{error: String, result: *, success: boolean}>}
+ * @param {ScaffoldOptions} options
+ * @param {string} destinationBase
  */
-export async function writeProjectConfig(options, destinationBase) {
+export async function writeProjectConfig(
+  options: ScaffoldOptions,
+  destinationBase: string
+): Promise<ScaffoldOutput> {
   const output = standardOutputBuilder();
   try {
     const fileContents = {
@@ -62,17 +72,19 @@ export async function writeProjectConfig(options, destinationBase) {
 
 /**
  * @description Updates the basic NPM attributes
- * @param options
- * @param destinationPath
- * @returns {Promise<{error: String, result: *, success: boolean}>}
+ * @param {ScaffoldOptions} options
+ * @param {string} destinationPath
  */
-export async function updateNPMAttribs(options, destinationPath) {
+export async function updateNPMAttribs(
+  options: ScaffoldOptions,
+  destinationPath: string
+): Promise<ScaffoldOutput> {
   const output = standardOutputBuilder();
   try {
     // get package file
-    const pkgContents = await getPackageFile(destinationPath);
+    const pkgContents = (await getPackageFile(destinationPath)) as DIRTPkgFile;
 
-    if (pkgContents === -1) {
+    if (!pkgContents) {
       output.error = 'Package.json file not found';
       return output;
     }

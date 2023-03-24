@@ -14,14 +14,16 @@ import {
   updateNPMScriptsForStorybook,
 } from './utils/reactFEUtils.js';
 import { updateNPMScriptsWin32 } from './helpers/shared/win32FEHelpers.js';
-import copy_ from 'recursive-copy';
+import ScaffoldOutput = DIRTStackCLI.ScaffoldOutput;
+import ScaffoldOptions = DIRTStackCLI.ScaffoldOptions;
 
-type TODO = any;
 /**
  * @description Main function that kicks off the process for scaffolding the React frontend
- * @param options
+ * @param {ScaffoldOptions} options
  */
-export async function scaffoldReact(options) {
+export async function scaffoldReact(
+  options: ScaffoldOptions
+): Promise<ScaffoldOutput> {
   const useVerboseLogs = options['verboseLogs'];
   const output = standardOutputBuilder();
   const destination = path.join(process.cwd());
@@ -95,9 +97,12 @@ export async function scaffoldReact(options) {
     ConsoleLogger.printMessage(
       'Installing core D.I.R.T Stack React dependencies...'
     );
-  const installReactDepsResults: TODO = await installCoreReactFEDependencies();
+  const installReactDepsResults: ScaffoldOutput =
+    await installCoreReactFEDependencies();
 
   if (!installReactDepsResults.success) {
+    if (useVerboseLogs)
+      ConsoleLogger.printMessage(installReactDepsResults.error, 'error');
     return output;
   }
 
@@ -129,7 +134,8 @@ export async function scaffoldReact(options) {
     if (useVerboseLogs)
       ConsoleLogger.printMessage('Installing Storybook dependencies...');
 
-    const sbInstallDepResults: TODO = await installStorybookReactDependencies();
+    const sbInstallDepResults: ScaffoldOutput =
+      await installStorybookReactDependencies();
     if (!sbInstallDepResults.success) {
       return sbInstallDepResults;
     }

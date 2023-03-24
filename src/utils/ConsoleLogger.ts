@@ -1,4 +1,4 @@
-import chalk from 'chalk';
+import chalk, { ForegroundColorName } from 'chalk';
 import ConfigType = DIRTStackCLI.ConfigType;
 import MessageConfiguration = DIRTStackCLI.MessageConfiguration;
 import MessageConfigOption = DIRTStackCLI.MessageConfigOption;
@@ -43,10 +43,9 @@ export default class ConsoleLogger {
    */
   static printMessage(message: string, configName: ConfigType = 'info') {
     const config = messageConfigs(configName);
+    const colorName = config.color as ForegroundColorName;
     console.log(
-      chalk[config['color']](
-        `${chalk.bold.bgBlack(config['icon'])} » ${message}`
-      )
+      chalk[colorName](`${chalk.bold.bgBlack(config['icon'])} » ${message}`)
     );
   }
 

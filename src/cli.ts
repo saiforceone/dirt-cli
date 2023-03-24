@@ -7,6 +7,8 @@ import { preScaffold } from './preScaffold.js';
 import { postScaffold } from './postScaffold.js';
 import { validateProjectName } from './utils/validateProjectName.js';
 import { setupGitRepo } from './setupGitRepo.js';
+import LogType = DIRTStackCLI.LogType;
+import ScaffoldOptions = DIRTStackCLI.ScaffoldOptions;
 
 const { scaffoldDjango } = await import('./scaffoldDjango.js');
 const { scaffoldReact } = await import('./scaffoldReact.js');
@@ -22,7 +24,7 @@ async function cliPrompts() {
       message: 'What should we call this project?',
       name: 'projectName',
       type: 'input',
-      validate: function (input) {
+      validate: function (input: string) {
         return !!validateProjectName(input) ? true : 'Not a valid project name';
       },
     },
@@ -56,11 +58,11 @@ async function cliPrompts() {
 
 /**
  * @description Helper function that handles if we should show quiet or noisy logs
- * @param logType
- * @param options
+ * @param {LogType} logType
+ * @param {ScaffoldOptions} options
  * @returns {*|(function(): Promise<*>)}
  */
-function scaffoldFuncs(logType, options) {
+function scaffoldFuncs(logType: LogType, options: ScaffoldOptions) {
   const funcs = {
     noisyLogs: async function () {
       const djangoResult = await scaffoldDjango(options);

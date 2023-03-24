@@ -1,9 +1,9 @@
+import os from 'node:os';
+import path from 'node:path';
+import { access, cp as copy, writeFile } from 'node:fs/promises';
 import { exec } from 'child_process';
 import { createRequire } from 'module';
 import { standardOutputBuilder } from './standardOutputBuilder.js';
-import path from 'path';
-import { access, writeFile } from 'node:fs/promises';
-import copy_ from 'recursive-copy';
 import constants from 'node:constants';
 import {
   REACT_SB_STORIES_PATH,
@@ -19,23 +19,17 @@ import {
 } from '../constants/feConstants.js';
 import { getPackageFile } from './feUtils.js';
 import { normalizeWinFilePath } from './fileUtils.js';
-import os from 'os';
-type TODO = any;
-let copy: TODO = copy_;
-
-const FILE_COPY_OPTS = Object.freeze({
-  overwrite: true,
-  dot: true,
-});
+import { FILE_COPY_OPTS } from '../constants/index.js';
+import ScaffoldOutput = DIRTStackCLI.ScaffoldOutput;
+import DIRTPkgFile = DIRTStackCLI.DIRTPkgFile;
 
 const require = createRequire(import.meta.url);
 const reactStorybookDeps = require('../../configs/reactStorybookDependencies.json');
 
 /**
  * @description Helper function that handles installing core react frontend dependencies
- * @returns {Promise<*>}
  */
-export function installCoreReactFEDependencies() {
+export function installCoreReactFEDependencies(): Promise<ScaffoldOutput> {
   const output = standardOutputBuilder();
   return new Promise((resolve, reject) => {
     exec('npm i', (error, stdout, stderr) => {
@@ -53,10 +47,11 @@ export function installCoreReactFEDependencies() {
 
 /**
  * @description Helper function that copies static files for react to the correct directory
- * @param destinationBase
- * @returns {Promise<{error: String, result: *, success: boolean}>}
+ * @param {string} destinationBase
  */
-export async function copyReactStatic(destinationBase) {
+export async function copyReactStatic(
+  destinationBase: string
+): Promise<ScaffoldOutput> {
   const output = standardOutputBuilder();
   try {
     const currentFileUrl = import.meta.url;
@@ -74,7 +69,7 @@ export async function copyReactStatic(destinationBase) {
       destinationBase,
       FILE_COPY_OPTS
     );
-    output.result = `${results.length} React static files copied`;
+    output.result = `React static files copied`;
     output.success = true;
     return output;
   } catch (e) {
@@ -86,10 +81,12 @@ export async function copyReactStatic(destinationBase) {
 
 /**
  * @description Helper function that copies React Template files to the destination
- * @param destinationBase
+ * @param {string} destinationBase
  * @returns {Promise<{error: String, result: *, success: boolean}>}
  */
-export async function copyReactFE(destinationBase) {
+export async function copyReactFE(
+  destinationBase: string
+): Promise<ScaffoldOutput> {
   const output = standardOutputBuilder();
   try {
     const currentFileUrl = import.meta.url;
@@ -109,7 +106,7 @@ export async function copyReactFE(destinationBase) {
       FILE_COPY_OPTS
     );
 
-    output.result = `${results.length} React resources copied`;
+    output.result = `React resources copied`;
     output.success = true;
     return output;
   } catch (e) {
@@ -121,10 +118,11 @@ export async function copyReactFE(destinationBase) {
 
 /**
  * @description Helper function that copies storybook files for react
- * @param destinationBase
- * @returns {Promise<{error: String, result: *, success: boolean}>}
+ * @param {string} destinationBase
  */
-export async function copyReactStorybookFiles(destinationBase) {
+export async function copyReactStorybookFiles(
+  destinationBase: string
+): Promise<ScaffoldOutput> {
   const output = standardOutputBuilder();
   try {
     const currentFileUrl = import.meta.url;
@@ -158,9 +156,7 @@ export async function copyReactStorybookFiles(destinationBase) {
       FILE_COPY_OPTS
     );
 
-    output.result = `${
-      results.length + storyResults.length
-    } Storybook files & folders copied`;
+    output.result = `Storybook files & folders copied`;
     output.success = true;
     return output;
   } catch (e) {
@@ -172,9 +168,8 @@ export async function copyReactStorybookFiles(destinationBase) {
 
 /**
  * @description Helper function that installs storybook.js dependencies
- * @returns {Promise<*>}
  */
-export async function installStorybookReactDependencies() {
+export async function installStorybookReactDependencies(): Promise<ScaffoldOutput> {
   const output = standardOutputBuilder();
   const { packages } = reactStorybookDeps;
   const installString = Object.keys(packages)
@@ -199,14 +194,15 @@ export async function installStorybookReactDependencies() {
  * @todo Extract functionality to update package.json to a generic function
  * @description Updates the package.json file with the storybook scripts
  * @param destinationPath
- * @returns {Promise<{error: String, result: *, success: boolean}>}
  */
-export async function updateNPMScriptsForStorybook(destinationPath) {
+export async function updateNPMScriptsForStorybook(
+  destinationPath: string
+): Promise<ScaffoldOutput> {
   const output = standardOutputBuilder();
   try {
     // read & parse the package.json file in the project
     const pkgFilePath = path.join(destinationPath, PACKAGE_JSON_FILE);
-    const fileContents = await getPackageFile(destinationPath);
+    const fileContents = (await getPackageFile(destinationPath)) as DIRTPkgFile;
 
     // add entries to "scripts" for storybook
     fileContents['scripts']['prestorybook'] = STORYBOOK_SCRIPT_DEV_PRE;

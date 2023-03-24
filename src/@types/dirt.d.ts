@@ -31,4 +31,9 @@ declare namespace DIRTStackCLI {
   };
 
   export type MessageConfiguration = Record<ConfigType, MessageConfigOption>;
+
+  export type DIRTPkgFile = {
+    name: string;
+    scripts: Record<string, string>;
+  };
 }
