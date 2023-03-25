@@ -9,10 +9,10 @@ const validPattern = /^[a-z]\w+$/gim;
 /**
  * @description Helper function to validate a project name. Valid project names should start with a letter and not
  * contain spaces or dashes
- * @param projectName
+ * @param {string} projectName
  * @returns {*}
  */
-export function validateProjectName(projectName) {
+export function validateProjectName(projectName: string) {
   if (!projectName) return;
   return projectName.match(validPattern);
 }

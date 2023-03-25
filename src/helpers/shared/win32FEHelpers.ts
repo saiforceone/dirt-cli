@@ -6,17 +6,20 @@ import {
   PACKAGE_JSON_FILE,
 } from '../../constants/feConstants.js';
 import { getPackageFile } from '../../utils/feUtils.js';
+import ScaffoldOutput = DIRTStackCLI.ScaffoldOutput;
+import DIRTPkgFile = DIRTStackCLI.DIRTPkgFile;
 
 /**
  * @description Helper function that updates the `dirt-dev` script for windows environments
- * @param destination
- * @returns {Promise<{error: String, result: *, success: boolean}>}
+ * @param {string} destination
  */
-export async function updateNPMScriptsWin32(destination) {
+export async function updateNPMScriptsWin32(
+  destination: string
+): Promise<ScaffoldOutput> {
   const output = standardOutputBuilder();
 
   // get and read package file
-  const packageFileData = await getPackageFile(destination);
+  const packageFileData = (await getPackageFile(destination)) as DIRTPkgFile;
   if (typeof packageFileData === 'number') {
     output.error = 'Invalid package file';
     return output;
