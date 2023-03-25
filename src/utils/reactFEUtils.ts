@@ -63,12 +63,13 @@ export async function copyReactStatic(
     if (os.platform() === 'win32')
       templateBaseDir = normalizeWinFilePath(templateBaseDir);
 
-    await access(destinationBase, constants.W_OK);
-    const results = await copy(
-      templateBaseDir,
-      destinationBase,
-      FILE_COPY_OPTS
-    );
+    try {
+      await access(destinationBase, constants.W_OK);
+      await copy(templateBaseDir, destinationBase, FILE_COPY_OPTS);
+    } catch (e) {
+      output.error = (e as Error).message;
+      return output;
+    }
     output.result = `React static files copied`;
     output.success = true;
     return output;
@@ -100,11 +101,12 @@ export async function copyReactFE(
 
     await access(destinationBase, constants.W_OK);
 
-    const results = await copy(
-      templateBaseDir,
-      destinationBase,
-      FILE_COPY_OPTS
-    );
+    try {
+      await copy(templateBaseDir, destinationBase, FILE_COPY_OPTS);
+    } catch (e) {
+      output.error = (e as Error).message;
+      return output;
+    }
 
     output.result = `React resources copied`;
     output.success = true;
@@ -136,11 +138,12 @@ export async function copyReactStorybookFiles(
 
     await access(destinationBase, constants.W_OK);
 
-    const results = await copy(
-      templateBaseDir,
-      destinationBase,
-      FILE_COPY_OPTS
-    );
+    try {
+      await copy(templateBaseDir, destinationBase, FILE_COPY_OPTS);
+    } catch (e) {
+      output.error = (e as Error).message;
+      return output;
+    }
 
     let storiesBaseDir = path.resolve(
       path.normalize(new URL(currentFileUrl).pathname),
@@ -150,11 +153,16 @@ export async function copyReactStorybookFiles(
     if (os.platform() === 'win32')
       storiesBaseDir = normalizeWinFilePath(storiesBaseDir);
 
-    const storyResults = await copy(
-      storiesBaseDir,
-      path.join(destinationBase, 'dirt_fe_react', 'src'),
-      FILE_COPY_OPTS
-    );
+    try {
+      await copy(
+        storiesBaseDir,
+        path.join(destinationBase, 'dirt_fe_react', 'src'),
+        FILE_COPY_OPTS
+      );
+    } catch (e) {
+      output.error = (e as Error).message;
+      return output;
+    }
 
     output.result = `Storybook files & folders copied`;
     output.success = true;
@@ -178,7 +186,7 @@ export async function installStorybookReactDependencies(): Promise<ScaffoldOutpu
     })
     .join(' ');
   return new Promise((resolve, reject) => {
-    exec(`npm i -D ${installString}`, (error, stdout, stderr) => {
+    exec(`npm i -D ${installString}`, (error) => {
       if (error) {
         output.result = error.message;
         reject(output);

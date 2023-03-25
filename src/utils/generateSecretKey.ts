@@ -9,6 +9,6 @@ import cryptoRandomString from 'crypto-random-string';
  * @param {number} length
  * @returns {string}
  */
-export function generateSecretKey(length: number = 64): string {
+export function generateSecretKey(length = 64): string {
   return cryptoRandomString({ length, type: 'url-safe' });
 }

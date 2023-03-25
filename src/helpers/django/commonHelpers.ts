@@ -61,8 +61,7 @@ export async function scaffoldDjangoProcess(
     }
   } else {
     try {
-      // @ts-ignore
-      await execaCommand(PIPENV_COMMAND).stdout.pipe(process.stdout);
+      await execaCommand(PIPENV_COMMAND).stdout?.pipe(process.stdout);
     } catch (e) {
       if (useVerboseLogs)
         ConsoleLogger.printMessage((e as Error).message, 'error');

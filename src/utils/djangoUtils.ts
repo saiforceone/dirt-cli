@@ -17,7 +17,6 @@ import ScaffoldOutput = DIRTStackCLI.ScaffoldOutput;
 
 const require = createRequire(import.meta.url);
 const djangoDependencies = require('../../configs/djangoDependencies.json');
-type TODO = any;
 
 /**
  * @description This function handles the installation of dependencies via Pipenv
@@ -63,7 +62,7 @@ export function createDjangoProject(
     }
     const venvCommand = PIPENV_VENV_COMMAND;
     const projectCommand = `${pythonExecutablePath} -m django startproject ${projectName} .`;
-    exec(venvCommand, (error, stdout, stderr) => {
+    exec(venvCommand, (error) => {
       if (error) {
         output.error = error.message;
         reject(output);
