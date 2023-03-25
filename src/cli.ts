@@ -1,5 +1,6 @@
 import chalk from 'chalk';
 import inquirer from 'inquirer';
+import type { Answers, QuestionCollection } from 'inquirer';
 import ora from 'ora';
 
 import ConsoleLogger from './utils/ConsoleLogger.js';
@@ -9,23 +10,22 @@ import { validateProjectName } from './utils/validateProjectName.js';
 import { setupGitRepo } from './setupGitRepo.js';
 import LogType = DIRTStackCLI.LogType;
 import ScaffoldOptions = DIRTStackCLI.ScaffoldOptions;
+import ScaffoldOutput = DIRTStackCLI.ScaffoldOutput;
 
 const { scaffoldDjango } = await import('./scaffoldDjango.js');
 const { scaffoldReact } = await import('./scaffoldReact.js');
-type TODO = any;
 
 /**
  * @description Prompt the user when setting up a new DIRT Stack project
- * @returns {Promise<*>}
  */
-async function cliPrompts() {
-  const prompts = [
+async function cliPrompts(): Promise<Answers> {
+  const prompts: QuestionCollection = [
     {
       message: 'What should we call this project?',
       name: 'projectName',
       type: 'input',
       validate: function (input: string) {
-        return !!validateProjectName(input) ? true : 'Not a valid project name';
+        return validateProjectName(input) ? true : 'Not a valid project name';
       },
     },
     {
@@ -53,7 +53,7 @@ async function cliPrompts() {
       type: 'confirm',
     },
   ];
-  return await inquirer.prompt(prompts);
+  return inquirer.prompt(prompts);
 }
 
 /**
@@ -74,7 +74,7 @@ function scaffoldFuncs(logType: LogType, options: ScaffoldOptions) {
       }
 
       // Scaffold the React (FE) application
-      const reactResult: TODO = await scaffoldReact(options);
+      const reactResult: ScaffoldOutput = await scaffoldReact(options);
 
       ConsoleLogger.printMessage(`React FE Status: ${reactResult.result}`);
 
@@ -84,7 +84,7 @@ function scaffoldFuncs(logType: LogType, options: ScaffoldOptions) {
 
       if (options['initializeGit']) {
         ConsoleLogger.printMessage('Initializing git...');
-        const gitResult: TODO = await setupGitRepo();
+        const gitResult: ScaffoldOutput = await setupGitRepo();
 
         ConsoleLogger.printMessage(
           gitResult.success
@@ -111,7 +111,7 @@ function scaffoldFuncs(logType: LogType, options: ScaffoldOptions) {
           process.exit(1);
         }
         frontendSpinner.start();
-        const frontendResult: any = await scaffoldReact(options);
+        const frontendResult: ScaffoldOutput = await scaffoldReact(options);
         frontendResult.success
           ? frontendSpinner.succeed()
           : frontendSpinner.fail('Failed to setup Frontend. See below.');
@@ -124,14 +124,16 @@ function scaffoldFuncs(logType: LogType, options: ScaffoldOptions) {
 
         if (options['initializeGit']) {
           gitSpinner.start();
-          const gitResult: any = await setupGitRepo();
+          const gitResult: ScaffoldOutput = await setupGitRepo();
           gitResult.success
             ? gitSpinner.succeed()
             : gitSpinner.warn(gitResult.error);
         }
       } catch (e) {
         console.log(`
-        ${chalk.red(`Failed to scaffold project with error: ${e.toString()}`)}
+        ${chalk.red(
+          `Failed to scaffold project with error: ${(e as Error).message}`
+        )}
         `);
         process.exit(1);
       }
@@ -151,7 +153,7 @@ export async function cli() {
   preScaffold();
 
   // process prompts
-  let options = await cliPrompts();
+  const options = await cliPrompts();
 
   // print welcome
   console.log(
@@ -167,8 +169,8 @@ export async function cli() {
   `);
 
   // Call scaffold functions based on log type selection
-  await scaffoldFuncs(logType, options)();
+  await scaffoldFuncs(logType, options as ScaffoldOptions)();
 
   // print post scaffold message
-  postScaffold(options);
+  postScaffold(options as ScaffoldOptions);
 }
