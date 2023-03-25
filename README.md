@@ -15,9 +15,9 @@ Welcome to a nicer way to scaffold Django projects utilizing InertiaJs, React & 
 
 ## Requirements
 The DIRT CLI has the following requirements
-* Python 3.x
-* NodeJs 16.x
-* Pipenv
+* [Python 3.x](https://www.python.org/)
+* [NodeJs 16.x](https://nodejs.org/en)
+* [Pipenv](https://pipenv.pypa.io/en/latest/) 
 
 ## Things to keep in mind
 * This is a very early version of the CLI
