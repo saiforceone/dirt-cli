@@ -14,7 +14,7 @@ export const Note: FC<NoteProps> = ({ iconElement, labelText, content }) => {
       {iconElement ? iconElement : <FaInfoCircle size={20} />}
       <span>
         <span className="underline italic">{labelText}</span>{' '}
-        <span className="text-purple-800">{content}</span>
+        <span className="text-slate-400">{content}</span>
       </span>
     </div>
   );
