@@ -12,10 +12,111 @@ import {
   SiVite,
   TbShovel,
 } from 'react-icons/all';
+import 'semantic-ui-css/semantic.min.css';
+import { Image, List } from 'semantic-ui-react';
 import { projectConfig } from '../../../../@dirt_project/dirt.json';
 import { Note } from '../../components/shared/Note/Note';
 
-const FolderIcon = <FaFolder size={20} />;
+const FolderIcon = <FaFolder className="folder icon" size={16} />;
+const FileIcon = <FaFileCode className="folder icon" size={16} />;
+
+type ProjectResource = {
+  readonly label: string;
+  readonly description: string;
+  readonly kind: 'folder' | 'file';
+  resources?: Array<ProjectResource>;
+};
+
+function GetProjectStructure(): [ProjectResource] {
+  const resources: Array<ProjectResource> = [
+    {
+      label: '@dirt_project',
+      description: 'Contains project config / settings',
+      kind: 'folder',
+    },
+    {
+      label: 'dirt_fe_react',
+      description: 'Contains the React app including pages, components, etc.',
+      kind: 'folder',
+      resources: [
+        {
+          label: 'src',
+          description: 'Frontend source files',
+          kind: 'folder',
+          resources: [
+            {
+              label: 'pages',
+              description: "Contains this application's pages (Inertia views)",
+              kind: 'folder',
+            },
+            {
+              label: 'components',
+              description: 'Contains components used within the application',
+              kind: 'folder',
+            },
+            {
+              label: 'main.jsx',
+              description: 'Main entry point of the Inertia application',
+              kind: 'file',
+            },
+          ],
+        },
+      ],
+    },
+    {
+      label: projectConfig.projectName,
+      description: 'Main Django web application',
+      kind: 'folder',
+    },
+  ];
+
+  if (projectConfig.withStorybook) {
+    resources.unshift({
+      label: '.storybook',
+      description: 'Contains configuration for StorybookJS',
+      kind: 'folder',
+    });
+  }
+
+  return [
+    {
+      label: projectConfig.projectName,
+      description: 'Application folder',
+      kind: 'folder',
+      resources,
+    },
+  ];
+}
+
+function RenderField({
+  label,
+  resources,
+  kind,
+  description,
+}: ProjectResource): JSX.Element {
+  return (
+    <List.Item key={label}>
+      {/* {kind === 'file' ? FileIcon : FolderIcon} */}
+      <img src={`/static/images/${kind}.png`} className="ui small icon" />
+      <List.Content>
+        <List.Header>{label}</List.Header>
+        <List.Description>{description}</List.Description>
+        {resources?.map((res) => (
+          <List.List key={res.label}>{RenderField(res)}</List.List>
+        ))}
+      </List.Content>
+    </List.Item>
+  );
+}
+
+function RenderFolderStructure(resources: [ProjectResource]): JSX.Element {
+  return (
+    <List inverted relaxed>
+      {resources.map((res) => RenderField(res))}
+    </List>
+  );
+}
+
 const Index = (): React.ReactNode => {
   return (
     <div className="w-full bg-gradient-to-b from-[#02111B] to-[#30292F]">
@@ -37,55 +138,16 @@ const Index = (): React.ReactNode => {
         </p>
         <h2 className="text-white text-4xl font-heading">Ready to dig in?</h2>
         <div className="flex px-2 py-4 bg-slate-800 border-[#30292F] border-2 text-white rounded items-center gap-x-2">
-          <BsInfoCircleFill size={20} />
-          <p className="text-left">
-            You should replace this page with your own index page in{' '}
-            <span className="underline font-semibold text-slate-400">
-              dirt_fe_react/pages/Home/Index.tsx
-            </span>
-          </p>
+          <Note
+            labelText="You should replace this page with your own index page in"
+            content="dirt_fe_react/pages/Home/Index.tsx"
+          />
         </div>
         <h2 className="text-white text-4xl font-heading">
           Important Files & Folders
         </h2>
         <div className="flex flex-col px-2 py-2 gap-y-2 bg-slate-800 border-[#30292F] border-2 text-white rounded text-left">
-          {projectConfig.withStorybook && (
-            <Note
-              iconElement={FolderIcon}
-              labelText=".storybook"
-              content="Contains configuration for StorybookJS"
-            />
-          )}
-          <Note
-            iconElement={FolderIcon}
-            labelText="@dirt_project"
-            content="Contains project config / settings"
-          />
-          <Note
-            iconElement={FolderIcon}
-            labelText="dirt_fe_react"
-            content="Contains the React app including pages, components, etc."
-          />
-          <Note
-            iconElement={FolderIcon}
-            labelText="dirt_fe_react/src/pages"
-            content="Contains this application's pages (Inertia views)"
-          />
-          <Note
-            iconElement={FolderIcon}
-            labelText="dirt_fe_react/src/components"
-            content="Contains components used within the application"
-          />
-          <Note
-            iconElement={FolderIcon}
-            labelText={projectConfig.projectName}
-            content="Main Django web application"
-          />
-          <Note
-            iconElement={<FaFileCode size={20} />}
-            labelText="dirt_fe_react/src/main.jsx"
-            content="Main entry point of the Inertia application"
-          />
+          {RenderFolderStructure(GetProjectStructure())}
         </div>
         <p className="text-slate-400 text-lg">
           <span className="font-heading text-white">D.I.R.T</span>, truly down
