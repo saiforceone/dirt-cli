@@ -1,6 +1,5 @@
 import * as React from 'react';
 import {
-  BsInfoCircleFill,
   DiReact,
   FaDiscord,
   FaFileCode,
@@ -12,15 +11,17 @@ import {
   SiVite,
   TbShovel,
 } from 'react-icons/all';
-import 'semantic-ui-css/semantic.min.css';
-import { Image, List } from 'semantic-ui-react';
 import { projectConfig } from '../../../../@dirt_project/dirt.json';
 import { Note } from '../../components/shared/Note/Note';
+import { Tree } from '../../components/temp/Tree';
 
-const FolderIcon = <FaFolder className="folder icon" size={16} />;
-const FileIcon = <FaFileCode className="folder icon" size={16} />;
+const ICON_SIZE = 24;
+
+const FolderIcon = <FaFolder size={ICON_SIZE} />;
+const FileIcon = <FaFileCode size={ICON_SIZE} />;
 
 type ProjectResource = {
+  readonly rootElement?: boolean;
   readonly label: string;
   readonly description: string;
   readonly kind: 'folder' | 'file';
@@ -80,8 +81,9 @@ function GetProjectStructure(): [ProjectResource] {
 
   return [
     {
+      rootElement: true,
       label: projectConfig.projectName,
-      description: 'Application folder',
+      description: 'Application / Project folder',
       kind: 'folder',
       resources,
     },
@@ -89,32 +91,27 @@ function GetProjectStructure(): [ProjectResource] {
 }
 
 function RenderField({
+  rootElement,
   label,
   resources,
   kind,
   description,
 }: ProjectResource): JSX.Element {
   return (
-    <List.Item key={label}>
-      {/* {kind === 'file' ? FileIcon : FolderIcon} */}
-      <img src={`/static/images/${kind}.png`} className="ui small icon" />
-      <List.Content>
-        <List.Header>{label}</List.Header>
-        <List.Description>{description}</List.Description>
-        {resources?.map((res) => (
-          <List.List key={res.label}>{RenderField(res)}</List.List>
-        ))}
-      </List.Content>
-    </List.Item>
+    <Tree.Element
+      rootElement={rootElement}
+      icon={kind === 'folder' ? FolderIcon : FileIcon}
+      key={label}
+      title={label}
+      subtitle={description}
+    >
+      {resources?.map((res) => RenderField(res))}
+    </Tree.Element>
   );
 }
 
 function RenderFolderStructure(resources: [ProjectResource]): JSX.Element {
-  return (
-    <List inverted relaxed>
-      {resources.map((res) => RenderField(res))}
-    </List>
-  );
+  return <Tree>{resources.map((res) => RenderField(res))}</Tree>;
 }
 
 const Index = (): React.ReactNode => {
@@ -155,7 +152,7 @@ const Index = (): React.ReactNode => {
         </p>
         <div className="grid grid-cols-2 md:grid-cols-4 px-4 md:px-0 gap-8 md:gap-2">
           <a
-            className="w-fit text-white flex items-center gap-x-2"
+            className="w-fit text-white hover:text-white flex items-center gap-x-2"
             target="_blank"
             href="https://www.djangoproject.com/"
           >
@@ -178,7 +175,7 @@ const Index = (): React.ReactNode => {
             </svg>
           </a>
           <a
-            className="text-white flex items-center gap-x-2"
+            className="text-white hover:text-white flex items-center gap-x-2"
             target="_blank"
             href="https://reactjs.org/"
           >
@@ -186,7 +183,7 @@ const Index = (): React.ReactNode => {
             <span className="text-2xl">ReactJs</span>
           </a>
           <a
-            className="text-white flex items-center gap-x-2"
+            className="text-white hover:text-white flex items-center gap-x-2"
             target="_blank"
             href="https://tailwindcss.com/"
           >
@@ -200,7 +197,7 @@ const Index = (): React.ReactNode => {
         <div className="flex items-center justify-between self-center gap-x-8">
           <div className="flex flex-col items-center">
             <a
-              className="text-white flex items-center gap-x-2"
+              className="text-white hover:text-white flex items-center gap-x-2"
               href="https://vitejs.dev/"
               target="_blank"
             >
@@ -211,7 +208,7 @@ const Index = (): React.ReactNode => {
           {projectConfig.withStorybook && (
             <div className="flex flex-col text-white items-center gap-y-2">
               <a
-                className="text-white flex items-center gap-x-2"
+                className="text-white hover:text-white flex items-center gap-x-2"
                 href="https://storybook.js.org/"
                 target="_blank"
               >
@@ -227,14 +224,14 @@ const Index = (): React.ReactNode => {
         </h2>
         <div className="flex self-center gap-x-8 text-white">
           <a
-            className="flex items-center gap-x-2"
+            className="flex text-white hover:text-white items-center hover:text-white gap-x-2"
             target="_blank"
             href="https://github.com/saiforceone/dirt-cli"
           >
             <FaGithubAlt size={32} /> <span>Git D.I.R.T-y</span>
           </a>
           <a
-            className="flex items-center gap-x-2"
+            className="flex text-white hover:text-white items-center hover:text-white gap-x-2"
             target="_blank"
             href="https://discord.gg/sY3a5VN3y9"
           >
