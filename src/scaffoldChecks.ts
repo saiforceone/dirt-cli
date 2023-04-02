@@ -7,6 +7,7 @@ import ConsoleLogger from './utils/ConsoleLogger.js';
 import {
   MESSAGE_EXAMPLE_VENV_PATH_POSIX,
   MESSAGE_EXAMPLE_VENV_PATH_WINDOWS,
+  MESSAGE_RUNNING_PRE_SCAFFOLD_CHECKS,
 } from './constants/strings.js';
 
 /**
@@ -14,7 +15,7 @@ import {
  * @param {ScaffoldOptions} options
  */
 export function scaffoldChecks(options: ScaffoldOptions) {
-  const checksSpinner = ora('Running pre-scaffold checks...');
+  const checksSpinner = ora(MESSAGE_RUNNING_PRE_SCAFFOLD_CHECKS);
   const { projectName, verboseLogs } = options;
   const destinationPath = path.join(process.cwd(), projectName);
   // check project existence
@@ -45,5 +46,5 @@ export function scaffoldChecks(options: ScaffoldOptions) {
       'Project destination is valid. Scaffolding project...',
       'success'
     );
-  else checksSpinner.succeed();
+  else checksSpinner.succeed(MESSAGE_RUNNING_PRE_SCAFFOLD_CHECKS);
 }
