@@ -11,6 +11,7 @@ import { setupGitRepo } from './setupGitRepo.js';
 import LogType = DIRTStackCLI.LogType;
 import ScaffoldOptions = DIRTStackCLI.ScaffoldOptions;
 import ScaffoldOutput = DIRTStackCLI.ScaffoldOutput;
+import { setupPrettier } from './setupPrettier.js';
 
 const { scaffoldDjango } = await import('./scaffoldDjango.js');
 const { scaffoldReact } = await import('./scaffoldReact.js');
@@ -38,6 +39,12 @@ async function cliPrompts(): Promise<Answers> {
       default: false,
       message: 'Would you like to use StorybookJS?',
       name: 'withStorybook',
+      type: 'confirm',
+    },
+    {
+      default: false,
+      message: 'Would you like to install Prettier?',
+      name: 'installPrettier',
       type: 'confirm',
     },
     {
@@ -82,6 +89,18 @@ function scaffoldFuncs(logType: LogType, options: ScaffoldOptions) {
         process.exit(1);
       }
 
+      if (options['installPrettier']) {
+        // todo: check if we are in the correct path for windows and posix systems
+        ConsoleLogger.printMessage('Installing prettier...');
+        const prettierResult = await setupPrettier(process.cwd());
+        ConsoleLogger.printMessage(
+          prettierResult.success
+            ? 'Done'
+            : `Failed to install Prettier with error: ${prettierResult.error}. You might want to try installing it manually`,
+          prettierResult.success ? 'success' : 'warning'
+        );
+      }
+
       if (options['initializeGit']) {
         ConsoleLogger.printMessage('Initializing git...');
         const gitResult: ScaffoldOutput = await setupGitRepo();
@@ -99,6 +118,7 @@ function scaffoldFuncs(logType: LogType, options: ScaffoldOptions) {
       const frontendSpinner = ora(
         `Setting up Frontend (${chalk.green(options['frontend'])})...`
       );
+      const prettierSpinner = ora('Setting up prettier in your project...');
       const gitSpinner = ora('Setting up git in your project...');
       try {
         djangoSpinner.start();
@@ -120,6 +140,15 @@ function scaffoldFuncs(logType: LogType, options: ScaffoldOptions) {
           ${chalk.red(`Error: ${frontendResult.error}`)}
           `);
           process.exit(1);
+        }
+
+        if (options['installPrettier']) {
+          // todo: check if we are in the correct path for windows and posix systems
+          prettierSpinner.start();
+          const prettierResult = await setupPrettier(process.cwd());
+          prettierResult.success
+            ? prettierSpinner.succeed()
+            : prettierSpinner.warn(prettierResult.error);
         }
 
         if (options['initializeGit']) {

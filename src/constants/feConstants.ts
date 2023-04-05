@@ -12,3 +12,5 @@ export const PACKAGE_JSON_FILE = 'package.json';
 
 export const DIRT_DEV_SCRIPT_WINDOWS =
   'concurrently -c "auto" --names "dirt-backend,tailwind-css,dirt-frontend" "py manage.py runserver" "npm run tailwind-dev" "npm run vite-dev"';
+
+export const PRETTIER_TEMPLATE_PATH = '../../templates/prettier-templates';
