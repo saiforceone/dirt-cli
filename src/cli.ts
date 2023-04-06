@@ -13,6 +13,7 @@ import ScaffoldOptions = DIRTStackCLI.ScaffoldOptions;
 import ScaffoldOutput = DIRTStackCLI.ScaffoldOutput;
 import { setupPrettier } from './setupPrettier.js';
 
+import { scaffoldChecks } from './scaffoldChecks.js';
 const { scaffoldDjango } = await import('./scaffoldDjango.js');
 const { scaffoldReact } = await import('./scaffoldReact.js');
 
@@ -183,6 +184,9 @@ export async function cli() {
 
   // process prompts
   const options = await cliPrompts();
+
+  // environment checks
+  scaffoldChecks(options as ScaffoldOptions);
 
   // print welcome
   console.log(
