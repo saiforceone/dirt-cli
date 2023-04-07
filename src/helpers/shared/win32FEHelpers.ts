@@ -20,10 +20,6 @@ export async function updateNPMScriptsWin32(
 
   // get and read package file
   const packageFileData = (await getPackageFile(destination)) as DIRTPkgFile;
-  if (typeof packageFileData === 'number') {
-    output.error = 'Invalid package file';
-    return output;
-  }
 
   packageFileData['scripts']['dirt-dev'] = DIRT_DEV_SCRIPT_WINDOWS;
 
