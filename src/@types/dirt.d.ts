@@ -23,6 +23,7 @@ declare namespace DIRTStackCLI {
     projectName: string;
     verboseLogs: boolean;
     withStorybook: boolean;
+    installPrettier: boolean;
   };
 
   export type MessageConfigOption = {
@@ -35,5 +36,9 @@ declare namespace DIRTStackCLI {
   export type DIRTPkgFile = {
     name: string;
     scripts: Record<string, string>;
+  };
+
+  export type DIRTDependenciesFile = {
+    packages: Record<string, string>;
   };
 }
