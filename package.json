@@ -1,6 +1,6 @@
 {
   "name": "@saiforceone/dirt-cli",
-  "version": "0.0.3",
+  "version": "0.2.0",
   "description": "Official CLI Utility for the D.I.R.T stack",
   "bin": {
     "@saiforceone/create-dirt-stack": "bin/create-dirt-stack.js",
@@ -39,8 +39,7 @@
     "execa": "^7.1.0",
     "gradient-string": "^2.0.2",
     "inquirer": "^9.1.4",
-    "ora": "^6.1.2",
-    "recursive-copy": "^2.0.14"
+    "ora": "^6.1.2"
   },
   "devDependencies": {
     "@types/gradient-string": "^1.1.2",
