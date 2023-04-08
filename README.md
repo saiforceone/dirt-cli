@@ -49,6 +49,8 @@ pipenv shell
 
 # run the project
 npm run dirt-dev
+
+# open the web app in browser: http://localhost:8000
 ```
 
 If you opted to use the StoryBook option, you may run it from the project directory using
@@ -56,3 +58,7 @@ If you opted to use the StoryBook option, you may run it from the project direct
 npm run storybook
 ```
 
+### Known issues
+
+#### Hidden Django dev server output: 
+Currently, some Django dev server output is hidden when using `npm run dirt-dev`. The workaround is to run Django normally in it's own terminal (pipenv shell must be activated) and then the frontend in another terminal using `npm run dirt-fe`

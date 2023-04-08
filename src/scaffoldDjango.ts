@@ -2,24 +2,26 @@
  * scaffoldDjango.js
  * This is the main file responsible for scaffolding the Django part of the DIRT stack
  */
-import path from 'path';
-import fs from 'fs';
+import path from 'node:path';
+import fs from 'node:fs';
 import constants from 'node:constants';
 
 import ConsoleLogger from './utils/ConsoleLogger.js';
 import { standardOutputBuilder } from './utils/standardOutputBuilder.js';
 import { validateProjectName } from './utils/validateProjectName.js';
 import { scaffoldDjangoProcess } from './helpers/django/commonHelpers.js';
+import ScaffoldOutput = DIRTStackCLI.ScaffoldOutput;
+import ScaffoldOptions = DIRTStackCLI.ScaffoldOptions;
 
 /**
  * @description Main function that kicks off the process for scaffolding the Django application
  * @param options The options coming in from the CLI (process.argv)
  * @returns {Promise<*>}
  */
-export async function scaffoldDjango(options) {
+export async function scaffoldDjango(options: ScaffoldOptions) {
   const { projectName, verboseLogs: useVerboseLogs } = options;
 
-  let output = standardOutputBuilder();
+  let output: ScaffoldOutput = standardOutputBuilder();
 
   if (useVerboseLogs) {
     ConsoleLogger.printMessage('Setting up Django project...');

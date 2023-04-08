@@ -1,4 +1,5 @@
 import os from 'node:os';
+import { chmod, mkdir, rename, unlink } from 'node:fs/promises';
 import path from 'node:path';
 import { $, execaCommand } from 'execa';
 import {
@@ -32,16 +33,19 @@ import {
   MESSAGE_SETTING_SECRET_KEY,
 } from '../../constants/strings.js';
 import { generateSecretKey } from '../../utils/generateSecretKey.js';
-import { chmod, mkdir, rename, unlink } from 'node:fs/promises';
+import ScaffoldOptions = DIRTStackCLI.ScaffoldOptions;
+import ScaffoldOutput = DIRTStackCLI.ScaffoldOutput;
 
 /**
  * @async
  * @description executes windows-specific commands to scaffold the Django application
- * @param options
+ * @param {ScaffoldOptions} options
  * @param {string} destination
- * @returns {Promise<{error: String, result: *, success: boolean}>}
  */
-export async function scaffoldDjangoProcess(options, destination) {
+export async function scaffoldDjangoProcess(
+  options: ScaffoldOptions,
+  destination: string
+): Promise<ScaffoldOutput> {
   const { projectName, verboseLogs: useVerboseLogs } = options;
 
   const output = standardOutputBuilder();
@@ -56,11 +60,18 @@ export async function scaffoldDjangoProcess(options, destination) {
       return output;
     }
   } else {
-    await execaCommand(PIPENV_COMMAND).stdout.pipe(process.stdout);
+    try {
+      await execaCommand(PIPENV_COMMAND).stdout?.pipe(process.stdout);
+    } catch (e) {
+      if (useVerboseLogs)
+        ConsoleLogger.printMessage((e as Error).message, 'error');
+      output.result = `Failed to exec pipenv command: ${(e as Error).message}`;
+      return output;
+    }
   }
 
   // 2. install dependencies
-  const installDepsResult = await installDependencies();
+  const installDepsResult: ScaffoldOutput = await installDependencies();
 
   if (!installDepsResult.success) {
     if (useVerboseLogs) ConsoleLogger.printOutput(installDepsResult);
@@ -69,7 +80,7 @@ export async function scaffoldDjangoProcess(options, destination) {
   }
 
   // 3. get venv location
-  const pipenvLocResult = await getVirtualEnvLocation();
+  const pipenvLocResult: ScaffoldOutput = await getVirtualEnvLocation();
   if (useVerboseLogs) ConsoleLogger.printOutput(pipenvLocResult);
   if (!pipenvLocResult.success) {
     return pipenvLocResult;
@@ -87,15 +98,14 @@ export async function scaffoldDjangoProcess(options, destination) {
 
   // 5. create django project
   try {
-    const createDjangoProjResult = await createDjangoProject(
+    const createDjangoProjResult: ScaffoldOutput = await createDjangoProject(
       projectName,
       pythonExecutable
     );
     if (useVerboseLogs) ConsoleLogger.printOutput(createDjangoProjResult);
     if (!createDjangoProjResult.success) return createDjangoProjResult;
   } catch (e) {
-    console.error('oops: ', e);
-    output.error = e;
+    output.error = (e as Error).message;
     return output;
   }
 
@@ -130,7 +140,11 @@ export async function scaffoldDjangoProcess(options, destination) {
   );
   if (useVerboseLogs)
     ConsoleLogger.printMessage('Updating Django application base settings...');
-  await writeBaseSettings(projectName, baseSettingsPath);
+  const baseSettingsResult = await writeBaseSettings(
+    projectName,
+    baseSettingsPath
+  );
+  if (!baseSettingsResult.success) return baseSettingsResult;
   if (useVerboseLogs)
     ConsoleLogger.printMessage(
       'Successfully updated Django application base settings',
@@ -155,8 +169,8 @@ export async function scaffoldDjangoProcess(options, destination) {
     if (useVerboseLogs)
       ConsoleLogger.printMessage('Removed default settings file', 'success');
   } catch (e) {
-    ConsoleLogger.printMessage(e.toString(), 'error');
-    output.error = e.toString();
+    ConsoleLogger.printMessage((e as Error).message, 'error');
+    output.error = (e as Error).message;
     return output;
   }
 
@@ -164,7 +178,13 @@ export async function scaffoldDjangoProcess(options, destination) {
   const originalIgnorePath = path.join(destination, GIT_IGNORE_TEMPLATE_FILE);
   const newIgnorePath = path.join(destination, GIT_IGNORE_FILENAME);
   if (useVerboseLogs) ConsoleLogger.printMessage('Renaming ignore file...');
-  await rename(originalIgnorePath, newIgnorePath);
+  try {
+    await rename(originalIgnorePath, newIgnorePath);
+  } catch (e) {
+    output.error = (e as Error).message;
+    return output;
+  }
+
   if (useVerboseLogs)
     ConsoleLogger.printMessage(
       'Ignore file was renamed. You may update this .gitignore file as you see fit',
@@ -177,7 +197,9 @@ export async function scaffoldDjangoProcess(options, destination) {
     ConsoleLogger.printMessage(
       'Copying default D.I.R.T Stack Inertia files...'
     );
-  await copyInertiaDefaults(projectPath);
+  const cpInertiaResult = await copyInertiaDefaults(projectPath);
+  if (!cpInertiaResult.success) return cpInertiaResult;
+
   if (useVerboseLogs)
     ConsoleLogger.printMessage('Successfully copied files', 'success');
 
@@ -188,17 +210,41 @@ export async function scaffoldDjangoProcess(options, destination) {
   // change permissions of manage.py so that we can run it
   // check if on windows on *Nix
   const managePyPath = path.join(destination, MANAGE_PY_FILENAME);
-  await chmod(managePyPath, MANAGE_PY_MODE);
+  try {
+    await chmod(managePyPath, MANAGE_PY_MODE);
+  } catch (e) {
+    if (useVerboseLogs)
+      ConsoleLogger.printMessage(
+        `Error changing manage.py permissions: ${(e as Error).message}`,
+        'error'
+      );
+    output.error = (e as Error).message;
+    return output;
+  }
+
   if (useVerboseLogs)
     ConsoleLogger.printMessage(
       'Permissions updated. Project now runnable',
       'success'
     );
+
   // create additional folders
   if (useVerboseLogs) ConsoleLogger.printMessage('Creating static folder....');
   const staticFolderPath = path.join(destination, STATIC_FOLDER_NAME);
-  await mkdir(staticFolderPath);
-  if (useVerboseLogs) ConsoleLogger.printMessage('Folder created', 'success');
+  try {
+    await mkdir(staticFolderPath);
+  } catch (e) {
+    if (useVerboseLogs)
+      ConsoleLogger.printMessage(
+        `Failed to make static folder with error: ${(e as Error).message}`,
+        'error'
+      );
+    output.error = (e as Error).message;
+    return output;
+  }
+
+  if (useVerboseLogs)
+    ConsoleLogger.printMessage('Static folder created', 'success');
 
   // finally, return output
   output.success = true;

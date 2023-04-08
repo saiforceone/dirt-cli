@@ -1,5 +1,6 @@
 import chalk from 'chalk';
 import inquirer from 'inquirer';
+import type { Answers, QuestionCollection } from 'inquirer';
 import ora from 'ora';
 
 import ConsoleLogger from './utils/ConsoleLogger.js';
@@ -7,22 +8,26 @@ import { preScaffold } from './preScaffold.js';
 import { postScaffold } from './postScaffold.js';
 import { validateProjectName } from './utils/validateProjectName.js';
 import { setupGitRepo } from './setupGitRepo.js';
+import LogType = DIRTStackCLI.LogType;
+import ScaffoldOptions = DIRTStackCLI.ScaffoldOptions;
+import ScaffoldOutput = DIRTStackCLI.ScaffoldOutput;
+import { setupPrettier } from './setupPrettier.js';
 
+import { scaffoldChecks } from './scaffoldChecks.js';
 const { scaffoldDjango } = await import('./scaffoldDjango.js');
 const { scaffoldReact } = await import('./scaffoldReact.js');
 
 /**
  * @description Prompt the user when setting up a new DIRT Stack project
- * @returns {Promise<*>}
  */
-async function cliPrompts() {
-  const prompts = [
+async function cliPrompts(): Promise<Answers> {
+  const prompts: QuestionCollection = [
     {
       message: 'What should we call this project?',
       name: 'projectName',
       type: 'input',
-      validate: function (input) {
-        return !!validateProjectName(input) ? true : 'Not a valid project name';
+      validate: function (input: string) {
+        return validateProjectName(input) ? true : 'Not a valid project name';
       },
     },
     {
@@ -39,6 +44,12 @@ async function cliPrompts() {
     },
     {
       default: false,
+      message: 'Would you like to install Prettier?',
+      name: 'installPrettier',
+      type: 'confirm',
+    },
+    {
+      default: false,
       message: 'Would you like to have git initialized?',
       name: 'initializeGit',
       type: 'confirm',
@@ -50,16 +61,16 @@ async function cliPrompts() {
       type: 'confirm',
     },
   ];
-  return await inquirer.prompt(prompts);
+  return inquirer.prompt(prompts);
 }
 
 /**
  * @description Helper function that handles if we should show quiet or noisy logs
- * @param logType
- * @param options
+ * @param {LogType} logType
+ * @param {ScaffoldOptions} options
  * @returns {*|(function(): Promise<*>)}
  */
-function scaffoldFuncs(logType, options) {
+function scaffoldFuncs(logType: LogType, options: ScaffoldOptions) {
   const funcs = {
     noisyLogs: async function () {
       const djangoResult = await scaffoldDjango(options);
@@ -71,7 +82,7 @@ function scaffoldFuncs(logType, options) {
       }
 
       // Scaffold the React (FE) application
-      const reactResult = await scaffoldReact(options);
+      const reactResult: ScaffoldOutput = await scaffoldReact(options);
 
       ConsoleLogger.printMessage(`React FE Status: ${reactResult.result}`);
 
@@ -79,9 +90,21 @@ function scaffoldFuncs(logType, options) {
         process.exit(1);
       }
 
+      if (options['installPrettier']) {
+        // todo: check if we are in the correct path for windows and posix systems
+        ConsoleLogger.printMessage('Installing prettier...');
+        const prettierResult = await setupPrettier(process.cwd());
+        ConsoleLogger.printMessage(
+          prettierResult.success
+            ? 'Done'
+            : `Failed to install Prettier with error: ${prettierResult.error}. You might want to try installing it manually`,
+          prettierResult.success ? 'success' : 'warning'
+        );
+      }
+
       if (options['initializeGit']) {
         ConsoleLogger.printMessage('Initializing git...');
-        const gitResult = await setupGitRepo();
+        const gitResult: ScaffoldOutput = await setupGitRepo();
 
         ConsoleLogger.printMessage(
           gitResult.success
@@ -96,6 +119,7 @@ function scaffoldFuncs(logType, options) {
       const frontendSpinner = ora(
         `Setting up Frontend (${chalk.green(options['frontend'])})...`
       );
+      const prettierSpinner = ora('Setting up prettier in your project...');
       const gitSpinner = ora('Setting up git in your project...');
       try {
         djangoSpinner.start();
@@ -108,7 +132,7 @@ function scaffoldFuncs(logType, options) {
           process.exit(1);
         }
         frontendSpinner.start();
-        const frontendResult = await scaffoldReact(options);
+        const frontendResult: ScaffoldOutput = await scaffoldReact(options);
         frontendResult.success
           ? frontendSpinner.succeed()
           : frontendSpinner.fail('Failed to setup Frontend. See below.');
@@ -119,16 +143,27 @@ function scaffoldFuncs(logType, options) {
           process.exit(1);
         }
 
+        if (options['installPrettier']) {
+          // todo: check if we are in the correct path for windows and posix systems
+          prettierSpinner.start();
+          const prettierResult = await setupPrettier(process.cwd());
+          prettierResult.success
+            ? prettierSpinner.succeed()
+            : prettierSpinner.warn(prettierResult.error);
+        }
+
         if (options['initializeGit']) {
           gitSpinner.start();
-          const gitResult = await setupGitRepo();
+          const gitResult: ScaffoldOutput = await setupGitRepo();
           gitResult.success
             ? gitSpinner.succeed()
             : gitSpinner.warn(gitResult.error);
         }
       } catch (e) {
         console.log(`
-        ${chalk.red(`Failed to scaffold project with error: ${e.toString()}`)}
+        ${chalk.red(
+          `Failed to scaffold project with error: ${(e as Error).message}`
+        )}
         `);
         process.exit(1);
       }
@@ -148,7 +183,10 @@ export async function cli() {
   preScaffold();
 
   // process prompts
-  let options = await cliPrompts();
+  const options = await cliPrompts();
+
+  // environment checks
+  scaffoldChecks(options as ScaffoldOptions);
 
   // print welcome
   console.log(
@@ -164,8 +202,8 @@ export async function cli() {
   `);
 
   // Call scaffold functions based on log type selection
-  await scaffoldFuncs(logType, options)();
+  await scaffoldFuncs(logType, options as ScaffoldOptions)();
 
   // print post scaffold message
-  postScaffold(options);
+  postScaffold(options as ScaffoldOptions);
 }

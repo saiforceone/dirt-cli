@@ -1,7 +1,15 @@
-import chalk from 'chalk';
+import chalk, { ForegroundColorName } from 'chalk';
+import ConfigType = DIRTStackCLI.ConfigType;
+import MessageConfiguration = DIRTStackCLI.MessageConfiguration;
+import MessageConfigOption = DIRTStackCLI.MessageConfigOption;
+import ScaffoldOutput = DIRTStackCLI.ScaffoldOutput;
 
-const messageConfigs = (configName) => {
-  const configs = {
+/**
+ * @description Object literal for message configuration options
+ * @param {ConfigType} configName
+ */
+const messageConfigs = (configName: ConfigType): MessageConfigOption => {
+  const configs: MessageConfiguration = {
     error: {
       icon: '[ohno]',
       color: 'red',
@@ -33,12 +41,11 @@ export default class ConsoleLogger {
    * @param {string} message
    * @param {string} configName
    */
-  static printMessage(message, configName = 'info') {
+  static printMessage(message: string, configName: ConfigType = 'info') {
     const config = messageConfigs(configName);
+    const colorName = config.color as ForegroundColorName;
     console.log(
-      chalk[config['color']](
-        `${chalk.bold.bgBlack(config['icon'])} » ${message}`
-      )
+      chalk[colorName](`${chalk.bold.bgBlack(config['icon'])} » ${message}`)
     );
   }
 
@@ -46,7 +53,7 @@ export default class ConsoleLogger {
    * @description Prints out a message from the standard output object
    * @param output
    */
-  static printOutput(output) {
+  static printOutput(output: ScaffoldOutput) {
     this.printMessage(output.result, output.success ? 'success' : 'error');
   }
 }

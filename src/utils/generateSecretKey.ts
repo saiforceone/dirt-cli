@@ -6,9 +6,9 @@ import cryptoRandomString from 'crypto-random-string';
 
 /**
  * Helper function that generates a secret for our django application
- * @param length
+ * @param {number} length
  * @returns {string}
  */
-export function generateSecretKey(length = 64) {
+export function generateSecretKey(length = 64): string {
   return cryptoRandomString({ length, type: 'url-safe' });
 }
