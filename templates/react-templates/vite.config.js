@@ -24,17 +24,19 @@ module.exports = {
     extensions: ['.js', '.json'],
   },
   build: {
-    outDir: resolve('./dirt_fe_react/dist'),
+    outDir: resolve('./static/dist/js'),
     assetsDir: '',
     manifest: true,
     emptyOutDir: true,
     target: 'es2015',
     rollupOptions: {
       input: {
-        main: resolve('./dirt_fe_react/src/main.jsx'),
+        main: resolve('./dirt_fe_react/src/main.tsx'),
       },
       output: {
-        chunkFileNames: undefined,
+        chunkFileNames: '[name].js',
+        entryFileNames: `[name].js`,
+        assetFileNames: `[name].[ext]`,
       },
     },
   },

@@ -169,7 +169,18 @@ export async function scaffoldDjangoProcess(
     if (useVerboseLogs)
       ConsoleLogger.printMessage('Removed default settings file', 'success');
   } catch (e) {
-    ConsoleLogger.printMessage((e as Error).message, 'error');
+    if (useVerboseLogs)
+      ConsoleLogger.printMessage((e as Error).message, 'error');
+    output.error = (e as Error).message;
+    return output;
+  }
+
+  // copy template tags
+  try {
+    if (useVerboseLogs) ConsoleLogger.printMessage('Copying template tags');
+  } catch (e) {
+    if (useVerboseLogs)
+      ConsoleLogger.printMessage((e as Error).message, 'error');
     output.error = (e as Error).message;
     return output;
   }

@@ -1,14 +1,14 @@
 {
-  "name": "dirt-tutorial",
+  "name": "dirt-stack",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "main.js",
   "scripts": {
     "vite-build": "vite build",
     "vite-dev": "vite",
     "tailwind-dev": "tailwindcss -i ./static/css/main.css -o ./static/dist/css/app.css --watch",
     "dirt-fe": "concurrently -c \"auto\" --names \"tailwind-css,dirt-frontend\" \"npm run tailwind-dev\" \"npm run vite-dev\"",
-    "dirt-dev": "concurrently -c \"auto\" --names \"dirt-dev-server,tailwind-css,dirt-frontend\" \"exec ./manage.py runserver\" \"npm run tailwind-dev\" \"npm run vite-dev\"",
+    "dirt-dev": "concurrently -c \"auto\" --names \"dirt-dev-server,tailwind-css,dirt-frontend\" \"PYTHONUNBUFFERED=1 exec ./manage.py runserver --settings=dirt_settings.dev\" \"npm run tailwind-dev\" \"npm run vite-dev\"",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": ["django", "dirt-cli", "dirt-stack"],
