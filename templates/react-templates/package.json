@@ -9,6 +9,7 @@
     "tailwind-dev": "tailwindcss -i ./static/css/main.css -o ./static/dist/css/app.css --watch",
     "dirt-fe": "concurrently -c \"auto\" --names \"tailwind-css,dirt-frontend\" \"npm run tailwind-dev\" \"npm run vite-dev\"",
     "dirt-dev": "concurrently -c \"auto\" --names \"dirt-dev-server,tailwind-css,dirt-frontend\" \"PYTHONUNBUFFERED=1 exec ./manage.py runserver --settings=dirt_settings.dev\" \"npm run tailwind-dev\" \"npm run vite-dev\"",
+    "build-assets": "node dirt-build-assets.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": ["django", "dirt-cli", "dirt-stack"],
