@@ -26,7 +26,7 @@ function normalizeWinFilePath(filePath) {
 
 /**
  * @description Helper function that checcks for the existence of production py file
- * @returns {success: boolean, message: string}
+ * @returns <{success: boolean, message: string}>
  */
 function preBuildChecks() {
   const result = { success: false, message: undefined };
@@ -47,7 +47,7 @@ function preBuildChecks() {
   // Note: If you don't want to use environment variables, you may remove this check
   if (!process.env.DIRT_SKEY) {
     result.message =
-      'You have not yet set a secret key [DIRT_SKEY] in your environemnt. Please do so or update this script [dirt-build-assets.js] to not perform this check';
+      'You have not yet set a secret key [DIRT_SKEY] in your environment. Please do so or update this script [dirt-build-assets.js] to not perform this check';
     return result;
   }
 
@@ -81,7 +81,6 @@ function execCommand(commandString) {
  * @returns {Promise<void>}
  */
 async function runScripts() {
-  console.log('DIRT secret key: ', process.env.DIRT_SKEY);
 
   const isWindows = platform() === 'win32';
   // preBuild checks

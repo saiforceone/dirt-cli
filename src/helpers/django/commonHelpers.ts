@@ -252,9 +252,10 @@ export async function scaffoldDjangoProcess(
   if (useVerboseLogs) ConsoleLogger.printMessage('Creating static folder....');
   let staticFolderPath = path.join(destination, STATIC_FOLDER_NAME);
   let staticFilesPath = path.join(destination, STATIC_FILES_FOLDER_NAME);
-  if (platform() === 'win32')
-    staticFilesPath = normalizeWinFilePath(staticFolderPath);
-  staticFilesPath = normalizeWinFilePath(staticFilesPath);
+  if (platform() === 'win32') {
+    staticFolderPath = normalizeWinFilePath(staticFolderPath);
+    staticFilesPath = normalizeWinFilePath(staticFilesPath);
+  }
   try {
     await mkdir(staticFolderPath);
     await mkdir(staticFilesPath);
