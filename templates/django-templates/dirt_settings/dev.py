@@ -7,4 +7,4 @@ print('Loaded with dev configuration...')
 # Set Debug mode. For development, this is usually going to stay as True
 DEBUG = True
 
-# Secret Key below
+# Add your additional settings below

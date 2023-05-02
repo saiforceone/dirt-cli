@@ -145,15 +145,22 @@ export async function copyDjangoSettings(
 /**
  * @description Writes settings for dev mode
  * @param {string} secretKey This serves as Django's secret key
+ * @param {string} projectName The name of the project
  * @param {string} destination
  */
 export async function writeDevSettings(
   secretKey: string,
+  projectName: string,
   destination: string
 ): Promise<ScaffoldOutput> {
   const output = standardOutputBuilder();
   try {
-    await appendFile(destination, `\nSECRET_KEY = "${secretKey}"`);
+    const appSettings = `
+    \n#Add extra apps here
+    \nINSTALLED_APPS += ['${projectName}']
+    \n#Secret Key\nSECRET_KEY = "${secretKey}"
+    `;
+    await appendFile(destination, appSettings);
     output.result = 'Dev settings updated';
     output.success = true;
     return output;

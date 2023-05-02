@@ -20,3 +20,6 @@ DEBUG = False
 # like openssl installed, you can generate a string for your secret key by doing the following openssl rand -base64
 # <length> where <length> can be a value like 64 and replace the environment variable.
 # SECRET_KEY = os.environ.get('DIRT_SKEY')
+
+# Uncomment the line below and update your installed apps to include <project_name> for the custom template tags to work
+# INSTALLED_APPS += ['<project_name>']

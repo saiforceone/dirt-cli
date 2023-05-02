@@ -132,7 +132,11 @@ export async function scaffoldDjangoProcess(
     DEV_PY_FILENAME
   );
   // 7.3 write secret key
-  const secretKeyResult = await writeDevSettings(secretKey, devSettingsPath);
+  const secretKeyResult = await writeDevSettings(
+    secretKey,
+    projectName,
+    devSettingsPath
+  );
   if (useVerboseLogs) ConsoleLogger.printOutput(secretKeyResult);
   if (!secretKeyResult.success) return secretKeyResult;
   if (useVerboseLogs) ConsoleLogger.printMessage(MESSAGE_SECRET_KEY_SET);
@@ -272,7 +276,7 @@ export async function scaffoldDjangoProcess(
     ConsoleLogger.printMessage('Copying local asset builder scripts...');
   const copyAssetBuilderResult = await copyAssets(
     LOCAL_ASSET_BUILDERS_PATH,
-    projectPath
+    destination
   );
 
   if (!copyAssetBuilderResult.success) {
