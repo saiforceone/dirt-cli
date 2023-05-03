@@ -14,4 +14,8 @@ export const PIPENV_VENV_COMMAND = 'pipenv --venv';
 export const DJANGO_TEMPLATES_PATH = '../../../templates/django-templates';
 export const INERTIA_DEFAULTS_PATH = '../../../templates/inertia-defaults';
 export const STATIC_FOLDER_NAME = 'static';
+export const STATIC_FILES_FOLDER_NAME = 'staticfiles';
 export const STDIO_OPTS = Object.freeze({ stdio: 'ignore' });
+
+export const DJANGO_TEMPLATE_TAGS_PATH =
+  '../../../templates/django-templatetags';

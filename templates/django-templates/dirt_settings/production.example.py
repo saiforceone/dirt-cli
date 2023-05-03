@@ -12,7 +12,14 @@ ALLOWED_HOSTS = []
 # By default, in production, DEBUG is to be False
 DEBUG = False
 
-# Generate a secret key, uncomment the line below and then paste it Note: if you have something like openssl
-# installed, you can generate a string for your secret key by doing the following openssl rand -base64 <length> where
-# <length> can be a value like 64
-# SECRET_KEY = ""
+# Add your other application settings here like database settings
+
+# Export a secret key to your environment.
+
+# Alternatively: You can generate a secret key. Uncomment the line below and then paste it Note: if you have something
+# like openssl installed, you can generate a string for your secret key by doing the following openssl rand -base64
+# <length> where <length> can be a value like 64 and replace the environment variable.
+# SECRET_KEY = os.environ.get('DIRT_SKEY')
+
+# Uncomment the line below and update your installed apps to include <project_name> for the custom template tags to work
+# INSTALLED_APPS += ['<project_name>']

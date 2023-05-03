@@ -1,23 +1,30 @@
 {% load static %}
 {% load django_vite %}
+{% load dirtstack_site_tags %}
+{% is_debug as debug %}
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1"/>
-        <!-- custom fonts -->
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Rowdies:wght@300;400;700&display=swap" rel="stylesheet">
-        <!-- css -->
-        <link rel="stylesheet" href="{% static 'dist/css/app.css' %} "/>
-        <!-- vite hmr -->
-        {% vite_hmr_client %}
-        {% vite_asset 'src/main.jsx' %}
-        <title>D.I.R.T Stack - Django Inertia React Tailwind CSS</title>
-    </head>
-    <body>
-        <!-- inertia -->
-        {% block inertia %}{% endblock %}
-    </body>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- custom fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rowdies:wght@300;400;700&display=swap" rel="stylesheet">
+    <!-- css -->
+    <link rel="stylesheet" href="{% static 'dist/css/app.css' %} " />
+    {% if debug == True %}
+      <!-- vite hmr -->
+      {% vite_hmr_client %}
+      {% vite_asset 'src/main.tsx' %}
+    {% else %}
+      <!-- js -->
+      <script type='application/javascript' src="{% static 'dist/js/main.js' %}"></script>
+    {% endif %}
+    <title>D.I.R.T Stack - Django Inertia React Tailwind CSS</title>
+  </head>
+  <body>
+  <!-- inertia -->
+  {% block inertia %}{% endblock %}
+  </body>
 </html>

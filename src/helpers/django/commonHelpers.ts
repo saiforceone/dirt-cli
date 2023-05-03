@@ -1,4 +1,4 @@
-import os from 'node:os';
+import os, { platform } from 'node:os';
 import { chmod, mkdir, rename, unlink } from 'node:fs/promises';
 import path from 'node:path';
 import { $, execaCommand } from 'execa';
@@ -12,11 +12,13 @@ import {
   MANAGE_PY_MODE,
   PIPENV_COMMAND,
   SETTINGS_PY_FILE,
+  STATIC_FILES_FOLDER_NAME,
   STATIC_FOLDER_NAME,
   STDIO_OPTS,
 } from '../../constants/djangoConstants.js';
 import { standardOutputBuilder } from '../../utils/standardOutputBuilder.js';
 import {
+  copyAssets,
   copyDjangoSettings,
   copyInertiaDefaults,
   createDjangoProject,
@@ -35,6 +37,9 @@ import {
 import { generateSecretKey } from '../../utils/generateSecretKey.js';
 import ScaffoldOptions = DIRTStackCLI.ScaffoldOptions;
 import ScaffoldOutput = DIRTStackCLI.ScaffoldOutput;
+import { normalizeWinFilePath } from '../../utils/fileUtils.js';
+import { LOCAL_ASSET_BUILDERS_PATH } from '../../constants/index.js';
+import { Console } from 'inspector';
 
 /**
  * @async
@@ -127,7 +132,11 @@ export async function scaffoldDjangoProcess(
     DEV_PY_FILENAME
   );
   // 7.3 write secret key
-  const secretKeyResult = await writeDevSettings(secretKey, devSettingsPath);
+  const secretKeyResult = await writeDevSettings(
+    secretKey,
+    projectName,
+    devSettingsPath
+  );
   if (useVerboseLogs) ConsoleLogger.printOutput(secretKeyResult);
   if (!secretKeyResult.success) return secretKeyResult;
   if (useVerboseLogs) ConsoleLogger.printMessage(MESSAGE_SECRET_KEY_SET);
@@ -169,7 +178,18 @@ export async function scaffoldDjangoProcess(
     if (useVerboseLogs)
       ConsoleLogger.printMessage('Removed default settings file', 'success');
   } catch (e) {
-    ConsoleLogger.printMessage((e as Error).message, 'error');
+    if (useVerboseLogs)
+      ConsoleLogger.printMessage((e as Error).message, 'error');
+    output.error = (e as Error).message;
+    return output;
+  }
+
+  // copy template tags
+  try {
+    if (useVerboseLogs) ConsoleLogger.printMessage('Copying template tags');
+  } catch (e) {
+    if (useVerboseLogs)
+      ConsoleLogger.printMessage((e as Error).message, 'error');
     output.error = (e as Error).message;
     return output;
   }
@@ -230,9 +250,15 @@ export async function scaffoldDjangoProcess(
 
   // create additional folders
   if (useVerboseLogs) ConsoleLogger.printMessage('Creating static folder....');
-  const staticFolderPath = path.join(destination, STATIC_FOLDER_NAME);
+  let staticFolderPath = path.join(destination, STATIC_FOLDER_NAME);
+  let staticFilesPath = path.join(destination, STATIC_FILES_FOLDER_NAME);
+  if (platform() === 'win32') {
+    staticFolderPath = normalizeWinFilePath(staticFolderPath);
+    staticFilesPath = normalizeWinFilePath(staticFilesPath);
+  }
   try {
     await mkdir(staticFolderPath);
+    await mkdir(staticFilesPath);
   } catch (e) {
     if (useVerboseLogs)
       ConsoleLogger.printMessage(
@@ -245,6 +271,21 @@ export async function scaffoldDjangoProcess(
 
   if (useVerboseLogs)
     ConsoleLogger.printMessage('Static folder created', 'success');
+
+  // copy build-script
+  if (useVerboseLogs)
+    ConsoleLogger.printMessage('Copying local asset builder scripts...');
+  const copyAssetBuilderResult = await copyAssets(
+    LOCAL_ASSET_BUILDERS_PATH,
+    destination
+  );
+
+  if (!copyAssetBuilderResult.success) {
+    if (useVerboseLogs) ConsoleLogger.printOutput(copyAssetBuilderResult);
+    return copyAssetBuilderResult;
+  }
+
+  if (useVerboseLogs) ConsoleLogger.printOutput(copyAssetBuilderResult);
 
   // finally, return output
   output.success = true;

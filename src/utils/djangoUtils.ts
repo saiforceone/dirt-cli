@@ -145,15 +145,22 @@ export async function copyDjangoSettings(
 /**
  * @description Writes settings for dev mode
  * @param {string} secretKey This serves as Django's secret key
+ * @param {string} projectName The name of the project
  * @param {string} destination
  */
 export async function writeDevSettings(
   secretKey: string,
+  projectName: string,
   destination: string
 ): Promise<ScaffoldOutput> {
   const output = standardOutputBuilder();
   try {
-    await appendFile(destination, `\nSECRET_KEY = "${secretKey}"`);
+    const appSettings = `
+    \n#Add extra apps here
+    \nINSTALLED_APPS += ['${projectName}']
+    \n#Secret Key\nSECRET_KEY = "${secretKey}"
+    `;
+    await appendFile(destination, appSettings);
     output.result = 'Dev settings updated';
     output.success = true;
     return output;
@@ -189,6 +196,7 @@ export async function writeBaseSettings(
 }
 
 /**
+ * @deprecated Replaced with copyAssets
  * @description Copies inertia specific urls.py and default views file to the project destination
  * @param {string} destinationPath
  */
@@ -207,12 +215,8 @@ export async function copyInertiaDefaults(
 
     if (platform() === 'win32')
       inertiaDefaultsDir = normalizeWinFilePath(inertiaDefaultsDir);
-    try {
-      await copy(inertiaDefaultsDir, destinationPath, FILE_COPY_OPTS);
-    } catch (e) {
-      output.error = (e as Error).message;
-      return output;
-    }
+
+    await copy(inertiaDefaultsDir, destinationPath, FILE_COPY_OPTS);
 
     output.success = true;
     output.result = `Inertia files copied`;
@@ -220,6 +224,32 @@ export async function copyInertiaDefaults(
   } catch (e) {
     output.error = e.toString();
     output.result = 'Failed to copy inertia defaults';
+    return output;
+  }
+}
+
+export async function copyAssets(
+  sourcePath: string,
+  destinationPath: string
+): Promise<ScaffoldOutput> {
+  const output = standardOutputBuilder();
+  try {
+    const currentFileUrl = import.meta.url;
+
+    let assetBuilderSrcPath = path.resolve(
+      path.normalize(new URL(currentFileUrl).pathname),
+      sourcePath
+    );
+
+    if (platform() === 'win32')
+      assetBuilderSrcPath = normalizeWinFilePath(assetBuilderSrcPath);
+
+    await copy(assetBuilderSrcPath, destinationPath, FILE_COPY_OPTS);
+
+    output.success = true;
+    return output;
+  } catch (e) {
+    output.error = `Failed to copy assets with error: ${(e as Error).message}`;
     return output;
   }
 }
