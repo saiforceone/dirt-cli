@@ -1,7 +1,7 @@
 /**
  * This is the default vite.config.js file. Feel free to make changes as required
  */
-import { resolve } from 'path';
+import path, { resolve } from 'path';
 import tsconfigPaths from 'vite-tsconfig-paths';
 import Vue from '@vitejs/plugin-vue';
 
@@ -19,7 +19,10 @@ module.exports = {
     },
   },
   resolve: {
-    extensions: ['.js', '.json'],
+    alias: {
+      '~': path.resolve(__dirname, './dirt_fe_vue/src'),
+    },
+    extensions: ['.js', '.json', '.vue'],
   },
   build: {
     outDir: resolve('./dirt_fe_vue/dist'),
@@ -32,7 +35,9 @@ module.exports = {
         main: resolve('./dirt_fe_vue/src/main.js'),
       },
       output: {
-        chunkFileNames: undefined,
+        chunkFileNames: '[name].js',
+        entryFileNames: `[name].js`,
+        assetFileNames: `[name].[ext]`,
       },
     },
   },

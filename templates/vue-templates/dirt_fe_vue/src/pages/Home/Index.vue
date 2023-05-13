@@ -182,8 +182,8 @@ import {
 import { projectConfig } from '../../../../@dirt_project/dirt.json';
 
 // Component imports
-import Note from '../../components/shared/Note.vue';
-import Tree from '../../components/temp/Tree.vue';
+import Note from '~/components/shared/Note.vue';
+import Tree from '~/components/temp/Tree.vue';
 
 export default defineComponent({
   components: {

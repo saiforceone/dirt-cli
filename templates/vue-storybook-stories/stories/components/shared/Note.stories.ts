@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/vue3';
 
-import Note from '../../../components/shared/Note.vue';
+import Note from '~/components/shared/Note.vue';
 
 const meta: Meta<typeof Note> = {
   title: 'Shared/Note',

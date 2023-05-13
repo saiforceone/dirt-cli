@@ -1,4 +1,8 @@
-import { resolve } from 'path';
+/**
+ * This is the default vite.config.js file. Feel free to make changes as required
+ */
+
+import path, { resolve } from 'path';
 import tsconfigPaths from 'vite-tsconfig-paths';
 import react from '@vitejs/plugin-react';
 
@@ -21,7 +25,10 @@ module.exports = {
     },
   },
   resolve: {
-    extensions: ['.js', '.json'],
+    alias: {
+      '~': path.resolve(__dirname, './dirt_fe_react/src'),
+    },
+    extensions: ['.js', '.json', '.ts', '.tsx'],
   },
   build: {
     outDir: resolve('./static/dist/js'),

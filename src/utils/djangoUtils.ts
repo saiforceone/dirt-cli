@@ -2,9 +2,10 @@ import { exec } from 'child_process';
 import fs from 'node:fs';
 import constants from 'node:constants';
 import path from 'node:path';
-import { access, appendFile, cp as copy } from 'node:fs/promises';
+import { access, appendFile, cp as copy, mkdir } from 'node:fs/promises';
 import { createRequire } from 'module';
 import {
+  DIRT_TEMPLATES_FOLDER,
   DJANGO_TEMPLATES_PATH,
   INERTIA_DEFAULTS_PATH,
   PIPENV_VENV_COMMAND,
@@ -13,7 +14,9 @@ import { standardOutputBuilder } from './standardOutputBuilder.js';
 import { platform } from 'os';
 import { normalizeWinFilePath } from './fileUtils.js';
 import { FILE_COPY_OPTS } from '../constants/index.js';
+import { FRONTEND_PATHS } from '../constants/feConstants.js';
 import ScaffoldOutput = DIRTStackCLI.ScaffoldOutput;
+import DIRTCoreOpts = DIRTStackCLI.DIRTCoreOpts;
 
 const require = createRequire(import.meta.url);
 const djangoDependencies = require('../../configs/djangoDependencies.json');
@@ -138,6 +141,45 @@ export async function copyDjangoSettings(
   } catch (e) {
     output.result = 'Failed to copy files';
     output.error = e.toString();
+    return output;
+  }
+}
+
+export async function copyDjangoHTMLTemplates(
+  options: DIRTCoreOpts
+): Promise<ScaffoldOutput> {
+  const output = standardOutputBuilder();
+  try {
+    const currentFileUrl = import.meta.url;
+    let templateBaseDir = path.resolve(
+      path.normalize(new URL(currentFileUrl).pathname),
+      FRONTEND_PATHS[options.frontend].BASE_HTML_TEMPLATES_PATH
+    );
+
+    if (platform() === 'win32')
+      templateBaseDir = normalizeWinFilePath(templateBaseDir);
+
+    // create dirt_templates folder
+    const templateDestination = path.join(
+      options.destinationBase,
+      DIRT_TEMPLATES_FOLDER
+    );
+
+    // create folder
+    await mkdir(templateDestination);
+
+    // check destination
+    // await access(options.destinationBase, constants.W_OK);
+
+    // copy files
+    await copy(templateBaseDir, templateDestination, FILE_COPY_OPTS);
+
+    output.result = 'Base templates copied';
+    output.success = true;
+    return output;
+  } catch (e) {
+    output.result = 'Failed to copy templates';
+    output.error = (e as Error).message;
     return output;
   }
 }

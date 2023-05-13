@@ -3,6 +3,7 @@
 // Permission that should be applied when we overwrite manage.py
 export const MANAGE_PY_MODE = 0o775;
 export const DIRT_SETTINGS_FOLDER = 'dirt_settings';
+export const DIRT_TEMPLATES_FOLDER = 'dirt_templates';
 export const DEV_PY_FILENAME = 'dev.py';
 export const BASE_PY_FILENAME = 'base.py';
 export const SETTINGS_PY_FILE = 'settings.py';

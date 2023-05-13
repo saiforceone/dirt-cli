@@ -2,6 +2,9 @@ export const MESSAGE_COPYING_DIRT_FILES =
   'Copying D.I.R.T Stack files to project...';
 
 export const MESSAGE_DIRT_FILES_COPIED = 'D.I.R.T Stack files copied';
+export const MESSAGE_COPYING_HTML_TEMPLATES = 'Copying D.I.R.T template...';
+export const MESSAGE_DIRT_TEMPLATES_COPIED =
+  'D.I.R.T base template files copied';
 
 export const MESSAGE_SETTING_SECRET_KEY =
   'Setting Django application secret key...';

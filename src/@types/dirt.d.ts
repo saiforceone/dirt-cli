@@ -5,7 +5,7 @@ declare namespace DIRTStackCLI {
   /**
    * Frontend definitions
    */
-  export type Frontend = 'react' | 'vue' | 'svelte';
+  export type Frontend = 'react' | 'vue';
 
   export type LogType = 'noisyLogs' | 'quietLogs';
 
@@ -40,5 +40,29 @@ declare namespace DIRTStackCLI {
 
   export type DIRTDependenciesFile = {
     packages: Record<string, string>;
+  };
+
+  export type DIRTStorybookDependenciesFile = {
+    commonPackages: Record<string, string>;
+    react: Record<string, string>;
+    vue: Record<string, string>;
+  };
+
+  export type DIRTCoreOpts = {
+    destinationBase: string;
+    frontend: Frontend;
+  };
+
+  export type DIRTStorybookOpts = DIRTCoreOpts & {
+    storySource: string;
+    templateSource: string;
+  };
+
+  export type DIRTFrontendPathOpts = {
+    BASE_HTML_TEMPLATES_PATH: string;
+    STATIC_TEMPLATES_PATH: string;
+    STORY_BOOK_STORIES_PATH: string;
+    STORY_BOOK_TEMPLATES_PATH: string;
+    TEMPLATES_PATH: string;
   };
 }

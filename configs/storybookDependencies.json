@@ -1,0 +1,20 @@
+{
+  "commonPackages": {
+    "@storybook/addon-essentials": "^7.0.10",
+    "@storybook/addon-interactions": "^7.0.10",
+    "@storybook/addon-links": "^7.0.10",
+    "@storybook/blocks": "^7.0.10",
+    "@storybook/testing-library": "^0.0.14-next.2",
+    "storybook": "^7.0.10"
+  },
+  "react": {
+    "@storybook/react": "^7.0.10",
+    "@storybook/react-vite": "^7.0.10"
+  },
+  "vue": {
+    "@storybook/vue3": "^7.0.10",
+    "@storybook/vue3-vite": "^7.0.10",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  }
+}
