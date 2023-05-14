@@ -4,25 +4,23 @@
  */
 import React from 'react';
 import {
-  DiReact,
-  FaDiscord,
-  FaFileCode,
-  FaFolder,
-  FaGithubAlt,
+  SiGithub,
+  SiDiscord,
+  SiReact,
   SiDjango,
   SiStorybook,
   SiTailwindcss,
   SiVite,
-  TbShovel,
-} from 'react-icons/all';
+} from 'react-icons/si';
+import { HiFolder, HiCodeBracketSquare } from 'react-icons/hi2';
 import { projectConfig } from '../../../../@dirt_project/dirt.json';
 import { Note } from '~/components/shared/Note/Note';
 import { Tree } from '~/components/temp/Tree';
 
-const ICON_SIZE = 24;
+const ICON_SIZE = 32;
 
-const FolderIcon = <FaFolder size={ICON_SIZE} />;
-const FileIcon = <FaFileCode size={ICON_SIZE} />;
+const FolderIcon = <HiFolder size={ICON_SIZE} />;
+const FileIcon = <HiCodeBracketSquare size={ICON_SIZE} />;
 
 type ProjectResource = {
   readonly rootElement?: boolean;
@@ -122,7 +120,27 @@ const Index = (): React.ReactNode => {
   return (
     <div className="w-full bg-gradient-to-b from-[#02111B] to-[#30292F]">
       <div className="flex flex-col container mx-auto md:max-w-5xl gap-y-8 text-center h-full p-4 ">
-        <TbShovel className="self-center text-white" size={100} />
+        <svg
+          className="self-center"
+          fill="#fff"
+          height="100px"
+          width="100px"
+          style={{ marginTop: '1rem' }}
+          version="1.1"
+          id="Capa_1"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 490 490"
+        >
+          <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
+          <g
+            id="SVGRepo_tracerCarrier"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          ></g>
+          <g id="SVGRepo_iconCarrier">
+            <path d="M316.624,0l-18.061,24.729l59.624,43.557L207.064,273.202l-93.413-68.225l-59.774,81.363 c-20.034,27.255-28.212,60.835-23.009,94.549c5.248,34.043,23.428,63.96,51.207,84.248C105.039,481.912,131.757,490,158.205,490 c39.455,0,78.298-17.986,103.251-51.94l59.848-81.422l-89.521-65.383L382.903,86.342l59.697,43.611l18.06-24.729L316.624,0z M236.786,419.94c-31.741,43.163-93.039,52.328-136.651,20.468c-21.156-15.444-35.015-38.244-39.007-64.184 c-3.947-25.611,2.228-51.102,17.418-71.764l41.713-56.754l158.195,115.54L236.786,419.94z"></path>
+          </g>
+        </svg>
         <h1 className="text-white text-center text-7xl font-heading">
           Ready to get D.I.R.T-y?
         </h1>
@@ -186,7 +204,7 @@ const Index = (): React.ReactNode => {
             target="_blank"
             href="https://reactjs.org/"
           >
-            <DiReact className="text-white" size={42} />
+            <SiReact className="text-white" size={42} />
             <span className="text-2xl">ReactJs</span>
           </a>
           <a
@@ -231,18 +249,20 @@ const Index = (): React.ReactNode => {
         </h2>
         <div className="flex self-center gap-x-8 text-white">
           <a
-            className="flex text-white hover:text-white items-center hover:text-white gap-x-2"
+            className="flex text-white text-2xl hover:text-white items-center hover:text-white gap-x-2"
             target="_blank"
             href="https://github.com/saiforceone/dirt-cli"
           >
-            <FaGithubAlt size={32} /> <span>Git D.I.R.T-y</span>
+            <SiGithub size={32} />{' '}
+            <span className="font-heading">Git D.I.R.T-y</span>
           </a>
           <a
-            className="flex text-white hover:text-white items-center hover:text-white gap-x-2"
+            className="flex text-white text-2xl hover:text-white items-center hover:text-white gap-x-2"
             target="_blank"
             href="https://discord.gg/sY3a5VN3y9"
           >
-            <FaDiscord size={32} /> Peanut Cart Express on Discord
+            <SiDiscord size={32} />
+            <span className="font-heading">P.C.E Discord</span>
           </a>
         </div>
       </div>
