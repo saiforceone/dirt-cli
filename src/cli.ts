@@ -14,6 +14,7 @@ import { scaffoldChecks } from './scaffoldChecks.js';
 import LogType = DIRTStackCLI.LogType;
 import ScaffoldOptions = DIRTStackCLI.ScaffoldOptions;
 import ScaffoldOutput = DIRTStackCLI.ScaffoldOutput;
+import { setupVercelDeployment } from './utils/deploymentSetupUtils.js';
 
 const { scaffoldDjango } = await import('./scaffoldDjango.js');
 const { scaffoldFrontend } = await import('./scaffoldFrontend.js');
@@ -56,6 +57,12 @@ async function cliPrompts(): Promise<Answers> {
       type: 'confirm',
     },
     {
+      choices: ['Vercel', 'None'],
+      message: 'What deployment option would you like to use?',
+      name: 'deploymentOption',
+      type: 'list',
+    },
+    {
       default: false,
       message: 'Show verbose logs?',
       name: 'verboseLogs',
@@ -94,7 +101,6 @@ function scaffoldFuncs(logType: LogType, options: ScaffoldOptions) {
       }
 
       if (options['installPrettier']) {
-        // todo: check if we are in the correct path for windows and posix systems
         ConsoleLogger.printMessage('Installing prettier...');
         const prettierResult = await setupPrettier(process.cwd());
         ConsoleLogger.printMessage(
@@ -116,6 +122,17 @@ function scaffoldFuncs(logType: LogType, options: ScaffoldOptions) {
           gitResult.success ? 'success' : 'warning'
         );
       }
+
+      if (options['deploymentOption'] === 'Vercel') {
+        ConsoleLogger.printMessage(
+          `Setting up deployment option for ${options['deploymentOption']}`
+        );
+        const deploymentSetupResult = await setupVercelDeployment({
+          projectName: options.projectName,
+          destination: process.cwd(),
+        });
+        ConsoleLogger.printOutput(deploymentSetupResult);
+      }
     },
     quietLogs: async function () {
       const djangoSpinner = ora('Setting up Django...');
@@ -124,6 +141,11 @@ function scaffoldFuncs(logType: LogType, options: ScaffoldOptions) {
       );
       const prettierSpinner = ora('Setting up prettier in your project...');
       const gitSpinner = ora('Setting up git in your project...');
+      const deploymentOptSpinner = ora(
+        `Setting up deployment options for ${chalk.green(
+          options['deploymentOption']
+        )}...`
+      );
       try {
         djangoSpinner.start();
         const djangoResult = await scaffoldDjango(options);
@@ -147,7 +169,6 @@ function scaffoldFuncs(logType: LogType, options: ScaffoldOptions) {
         }
 
         if (options['installPrettier']) {
-          // todo: check if we are in the correct path for windows and posix systems
           prettierSpinner.start();
           const prettierResult = await setupPrettier(process.cwd());
           prettierResult.success
@@ -161,6 +182,17 @@ function scaffoldFuncs(logType: LogType, options: ScaffoldOptions) {
           gitResult.success
             ? gitSpinner.succeed()
             : gitSpinner.warn(gitResult.error);
+        }
+
+        if (options['deploymentOption'] === 'Vercel') {
+          deploymentOptSpinner.start();
+          const deploymentSetupResult = await setupVercelDeployment({
+            projectName: options.projectName,
+            destination: process.cwd(),
+          });
+          deploymentSetupResult.success
+            ? deploymentOptSpinner.succeed()
+            : deploymentOptSpinner.warn(deploymentSetupResult.result);
         }
       } catch (e) {
         console.log(`
