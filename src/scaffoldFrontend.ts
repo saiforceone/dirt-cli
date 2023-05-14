@@ -1,43 +1,41 @@
+// Core dependencies
 import os from 'node:os';
-import path from 'node:path';
-import { execaCommand } from 'execa';
-
+// 3rd-party dependencies
+import {execaCommand} from 'execa';
+import {standardOutputBuilder} from './utils/standardOutputBuilder.js';
 import ConsoleLogger from './utils/ConsoleLogger.js';
-import { updateNPMAttribs, writeProjectConfig } from './utils/feUtils.js';
-import { standardOutputBuilder } from './utils/standardOutputBuilder.js';
+import {updateNPMAttribs, writeProjectConfig} from './utils/feUtils.js';
 import {
-  copyReactFE,
-  copyReactStatic,
-  copyReactStorybookFiles,
-  installCoreReactFEDependencies,
-  installStorybookReactDependencies,
+  copyFrontendResources,
+  copyFrontendStaticResources,
+  copyFrontendStorybookFiles,
+  installCoreFrontendDependencies,
+  installStorybookDependencies,
   updateNPMScriptsForStorybook,
-} from './utils/reactFEUtils.js';
-import { updateNPMScriptsWin32 } from './helpers/shared/win32FEHelpers.js';
-import ScaffoldOutput = DIRTStackCLI.ScaffoldOutput;
-import ScaffoldOptions = DIRTStackCLI.ScaffoldOptions;
+} from './utils/frontendUtils.js';
 
-/**
- * @description Main function that kicks off the process for scaffolding the React frontend
- * @param {ScaffoldOptions} options
- */
-export async function scaffoldReact(
+import {FRONTEND_PATHS} from './constants/feConstants.js';
+import { updateNPMScriptsWin32 } from './helpers/shared/win32FEHelpers.js';
+// DIRT dependencies
+import ScaffoldOptions = DIRTStackCLI.ScaffoldOptions;
+import ScaffoldOutput = DIRTStackCLI.ScaffoldOutput;
+
+export async function scaffoldFrontend(
   options: ScaffoldOptions
 ): Promise<ScaffoldOutput> {
-  const useVerboseLogs = options['verboseLogs'];
   const output = standardOutputBuilder();
-  const destination = path.join(process.cwd());
+  const { verboseLogs: useVerboseLogs } = options;
+  const destination = process.cwd();
 
   // if not in the correct directory, then change
   // process.chdir(destination);
   if (useVerboseLogs) {
-    ConsoleLogger.printMessage('Preparing to scaffold React Frontend...');
+    ConsoleLogger.printMessage(
+      `Preparing to scaffold ${options.frontend} Frontend...`
+    );
     ConsoleLogger.printMessage('Writing project configuration files...');
   }
-  const projectConfigResults = await writeProjectConfig(
-    { ...options, frontend: 'react' },
-    destination
-  );
+  const projectConfigResults = await writeProjectConfig(options, destination);
 
   if (!projectConfigResults.success) {
     return projectConfigResults;
@@ -60,26 +58,32 @@ export async function scaffoldReact(
     return output;
   }
 
-  const copyReactFilesResults = await copyReactFE(destination);
+  const copyFrontendFilesResults = await copyFrontendResources(
+    FRONTEND_PATHS[options.frontend].TEMPLATES_PATH,
+    destination
+  );
   if (useVerboseLogs)
     ConsoleLogger.printMessage(
-      copyReactFilesResults.error
-        ? copyReactFilesResults.error
-        : copyReactFilesResults.result,
-      copyReactFilesResults.success ? 'success' : 'error'
+      copyFrontendFilesResults.error
+        ? copyFrontendFilesResults.error
+        : copyFrontendFilesResults.result,
+      copyFrontendFilesResults.success ? 'success' : 'error'
     );
 
-  if (!copyReactFilesResults.success) {
-    return copyReactFilesResults;
+  if (!copyFrontendFilesResults.success) {
+    return copyFrontendFilesResults;
   }
 
-  const copyReactStaticResults = await copyReactStatic(destination);
+  const copyFrontendStaticResults = await copyFrontendStaticResources(
+    FRONTEND_PATHS[options.frontend].STATIC_TEMPLATES_PATH,
+    destination
+  );
   if (useVerboseLogs)
     ConsoleLogger.printMessage(
-      copyReactStaticResults.error
-        ? copyReactStaticResults.error
-        : copyReactStaticResults.result,
-      copyReactStaticResults.success ? 'success' : 'error'
+      copyFrontendStaticResults.error
+        ? copyFrontendStaticResults.error
+        : copyFrontendStaticResults.result,
+      copyFrontendStaticResults.success ? 'success' : 'error'
     );
 
   // update package.json attributes: name, description
@@ -95,16 +99,17 @@ export async function scaffoldReact(
 
   if (useVerboseLogs)
     ConsoleLogger.printMessage(
-      'Installing core D.I.R.T Stack React dependencies...'
+      `Installing core D.I.R.T Stack ${options.frontend} dependencies...`
     );
-  const installReactDepsResults: ScaffoldOutput =
-    await installCoreReactFEDependencies();
 
-  if (!installReactDepsResults.success) {
+  const installFrontendDependenciesResults: ScaffoldOutput =
+    await installCoreFrontendDependencies();
+
+  if (!installFrontendDependenciesResults.success) {
     if (useVerboseLogs)
       ConsoleLogger.printMessage(
-        installReactDepsResults.error
-          ? installReactDepsResults.error
+        installFrontendDependenciesResults.error
+          ? installFrontendDependenciesResults.error
           : 'Install Error',
         'error'
       );
@@ -126,7 +131,13 @@ export async function scaffoldReact(
   if (options['withStorybook']) {
     if (useVerboseLogs) ConsoleLogger.printMessage('Setting up Storybook...');
     // copy storybook files
-    const sbFileCopyResults = await copyReactStorybookFiles(destination);
+    const sbFileCopyResults = await copyFrontendStorybookFiles({
+      destinationBase: destination,
+      frontend: options.frontend,
+      storySource: FRONTEND_PATHS[options.frontend].STORY_BOOK_STORIES_PATH,
+      templateSource:
+        FRONTEND_PATHS[options.frontend].STORY_BOOK_TEMPLATES_PATH,
+    });
 
     if (!sbFileCopyResults.success) {
       return sbFileCopyResults;
@@ -140,7 +151,7 @@ export async function scaffoldReact(
       ConsoleLogger.printMessage('Installing Storybook dependencies...');
 
     const sbInstallDepResults: ScaffoldOutput =
-      await installStorybookReactDependencies();
+      await installStorybookDependencies(options.frontend);
     if (!sbInstallDepResults.success) {
       return sbInstallDepResults;
     }
@@ -161,7 +172,8 @@ export async function scaffoldReact(
       ConsoleLogger.printMessage('Updated NPM scripts', 'success');
   }
 
-  output.result = 'React Application Scaffolded...';
+  output.result = `${options.frontend} Application Scaffolded...`;
   output.success = true;
+
   return output;
 }

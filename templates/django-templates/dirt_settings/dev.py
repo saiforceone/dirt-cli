@@ -7,4 +7,7 @@ print('Loaded with dev configuration...')
 # Set Debug mode. For development, this is usually going to stay as True
 DEBUG = True
 
+# Allowed hosts
+ALLOWED_HOSTS += ['127.0.0.1']
+
 # Add your additional settings below

@@ -1,6 +1,6 @@
 import chalk from 'chalk';
-import inquirer from 'inquirer';
 import type { Answers, QuestionCollection } from 'inquirer';
+import inquirer from 'inquirer';
 import ora from 'ora';
 
 import ConsoleLogger from './utils/ConsoleLogger.js';
@@ -8,14 +8,15 @@ import { preScaffold } from './preScaffold.js';
 import { postScaffold } from './postScaffold.js';
 import { validateProjectName } from './utils/validateProjectName.js';
 import { setupGitRepo } from './setupGitRepo.js';
-import LogType = DIRTStackCLI.LogType;
-import ScaffoldOptions = DIRTStackCLI.ScaffoldOptions;
-import ScaffoldOutput = DIRTStackCLI.ScaffoldOutput;
 import { setupPrettier } from './setupPrettier.js';
 
 import { scaffoldChecks } from './scaffoldChecks.js';
+import LogType = DIRTStackCLI.LogType;
+import ScaffoldOptions = DIRTStackCLI.ScaffoldOptions;
+import ScaffoldOutput = DIRTStackCLI.ScaffoldOutput;
+
 const { scaffoldDjango } = await import('./scaffoldDjango.js');
-const { scaffoldReact } = await import('./scaffoldReact.js');
+const { scaffoldFrontend } = await import('./scaffoldFrontend.js');
 
 /**
  * @description Prompt the user when setting up a new DIRT Stack project
@@ -31,7 +32,7 @@ async function cliPrompts(): Promise<Answers> {
       },
     },
     {
-      choices: ['react'],
+      choices: ['react', 'vue'],
       message: 'Select a frontend framework / library',
       name: 'frontend',
       type: 'list',
@@ -81,12 +82,14 @@ function scaffoldFuncs(logType: LogType, options: ScaffoldOptions) {
         process.exit(1);
       }
 
-      // Scaffold the React (FE) application
-      const reactResult: ScaffoldOutput = await scaffoldReact(options);
+      // Scaffold the Frontend application
+      const frontendResult: ScaffoldOutput = await scaffoldFrontend(options);
 
-      ConsoleLogger.printMessage(`React FE Status: ${reactResult.result}`);
+      ConsoleLogger.printMessage(
+        `${options.frontend} frontend Status: ${frontendResult.result}`
+      );
 
-      if (!reactResult.success) {
+      if (!frontendResult.success) {
         process.exit(1);
       }
 
@@ -132,7 +135,7 @@ function scaffoldFuncs(logType: LogType, options: ScaffoldOptions) {
           process.exit(1);
         }
         frontendSpinner.start();
-        const frontendResult: ScaffoldOutput = await scaffoldReact(options);
+        const frontendResult: ScaffoldOutput = await scaffoldFrontend(options);
         frontendResult.success
           ? frontendSpinner.succeed()
           : frontendSpinner.fail('Failed to setup Frontend. See below.');

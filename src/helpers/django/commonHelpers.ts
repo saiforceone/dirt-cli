@@ -19,6 +19,7 @@ import {
 import { standardOutputBuilder } from '../../utils/standardOutputBuilder.js';
 import {
   copyAssets,
+  copyDjangoHTMLTemplates,
   copyDjangoSettings,
   copyInertiaDefaults,
   createDjangoProject,
@@ -30,16 +31,17 @@ import {
 import ConsoleLogger from '../../utils/ConsoleLogger.js';
 import {
   MESSAGE_COPYING_DIRT_FILES,
+  MESSAGE_COPYING_HTML_TEMPLATES,
   MESSAGE_DIRT_FILES_COPIED,
+  MESSAGE_DIRT_TEMPLATES_COPIED,
   MESSAGE_SECRET_KEY_SET,
   MESSAGE_SETTING_SECRET_KEY,
 } from '../../constants/strings.js';
 import { generateSecretKey } from '../../utils/generateSecretKey.js';
-import ScaffoldOptions = DIRTStackCLI.ScaffoldOptions;
-import ScaffoldOutput = DIRTStackCLI.ScaffoldOutput;
 import { normalizeWinFilePath } from '../../utils/fileUtils.js';
 import { LOCAL_ASSET_BUILDERS_PATH } from '../../constants/index.js';
-import { Console } from 'inspector';
+import ScaffoldOptions = DIRTStackCLI.ScaffoldOptions;
+import ScaffoldOutput = DIRTStackCLI.ScaffoldOutput;
 
 /**
  * @async
@@ -120,6 +122,18 @@ export async function scaffoldDjangoProcess(
   if (useVerboseLogs) ConsoleLogger.printOutput(copyDjangoFilesResult);
   if (!copyDjangoFilesResult.success) return copyDjangoFilesResult;
   if (useVerboseLogs) ConsoleLogger.printMessage(MESSAGE_DIRT_FILES_COPIED);
+
+  // Copy Django Base Templates
+  if (useVerboseLogs)
+    ConsoleLogger.printMessage(MESSAGE_COPYING_HTML_TEMPLATES);
+  const copyDjangoTemplateFilesResult = await copyDjangoHTMLTemplates({
+    destinationBase: destination,
+    frontend: options.frontend,
+  });
+  if (useVerboseLogs) ConsoleLogger.printOutput(copyDjangoTemplateFilesResult);
+  if (!copyDjangoTemplateFilesResult.success)
+    return copyDjangoTemplateFilesResult;
+  if (useVerboseLogs) ConsoleLogger.printMessage(MESSAGE_DIRT_TEMPLATES_COPIED);
 
   // 7. Secret key
   if (useVerboseLogs) ConsoleLogger.printMessage(MESSAGE_SETTING_SECRET_KEY);

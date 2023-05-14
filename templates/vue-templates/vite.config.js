@@ -1,19 +1,13 @@
 /**
  * This is the default vite.config.js file. Feel free to make changes as required
  */
-
 import path, { resolve } from 'path';
 import tsconfigPaths from 'vite-tsconfig-paths';
-import react from '@vitejs/plugin-react';
+import Vue from '@vitejs/plugin-vue';
 
 module.exports = {
-  plugins: [
-    tsconfigPaths(),
-    react({
-      include: '**/*.disabled',
-    }),
-  ],
-  root: resolve('./dirt_fe_react'),
+  plugins: [tsconfigPaths(), Vue()],
+  root: resolve('./dirt_fe_vue'),
   base: '/static/',
   server: {
     host: '127.0.0.1',
@@ -26,19 +20,19 @@ module.exports = {
   },
   resolve: {
     alias: {
-      '~': path.resolve(__dirname, './dirt_fe_react/src'),
+      '~': path.resolve(__dirname, './dirt_fe_vue/src'),
     },
-    extensions: ['.js', '.json', '.ts', '.tsx'],
+    extensions: ['.js', '.json', '.vue'],
   },
   build: {
-    outDir: resolve('./static/dist/js'),
+    outDir: resolve('./dirt_fe_vue/dist'),
     assetsDir: '',
     manifest: true,
     emptyOutDir: true,
     target: 'es2015',
     rollupOptions: {
       input: {
-        main: resolve('./dirt_fe_react/src/main.tsx'),
+        main: resolve('./dirt_fe_vue/src/main.js'),
       },
       output: {
         chunkFileNames: '[name].js',

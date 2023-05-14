@@ -1,0 +1,41 @@
+{
+  "name": "dirt-stack",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "vite-build": "vite build",
+    "vite-dev": "vite",
+    "tailwind": "tailwindcss -i ./static/css/main.css -o ./static/dist/css/app.css",
+    "tailwind-dev": "tailwindcss -i ./static/css/main.css -o ./static/dist/css/app.css --watch",
+    "dirt-fe": "concurrently -c \"auto\" --names \"tailwind-css,dirt-frontend\" \"npm run tailwind-dev\" \"npm run vite-dev\"",
+    "dirt-dev": "concurrently -c \"auto\" --names \"dirt-dev-server,tailwind-css,dirt-frontend\" \"PYTHONUNBUFFERED=1 exec ./manage.py runserver --settings=dirt_settings.dev\" \"npm run tailwind-dev\" \"npm run vite-dev\"",
+    "build-assets": "node dirt-build-assets.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "django",
+    "dirt-cli",
+    "dirt-stack"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "autoprefixer": "^10.4.13",
+    "concurrently": "^7.6.0",
+    "@heroicons/vue": "^2.0.17",
+    "@inertiajs/vue3": "^1.0.6",
+    "@vitejs/plugin-vue": "^4.2.3",
+    "postcss": "^8.4.21",
+    "prettier": "^2.8.3",
+    "tailwindcss": "^3.2.4",
+    "ts-loader": "^9.4.2",
+    "typescript": "^4.9.5",
+    "vite": "^4.1.1",
+    "vite-tsconfig-paths": "^4.0.5",
+    "vue": "^3.2.47",
+    "vue3-simple-icons": "^7.18.0"
+  },
+  "dependencies": {
+  }
+}

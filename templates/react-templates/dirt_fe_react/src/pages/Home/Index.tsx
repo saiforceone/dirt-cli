@@ -3,14 +3,12 @@
  * Seriously, just replace it since we're breaking all the rules here.
  */
 import React from 'react';
-import type { FC } from 'react';
 import {
   DiReact,
   FaDiscord,
   FaFileCode,
   FaFolder,
   FaGithubAlt,
-  FaInfoCircle,
   SiDjango,
   SiStorybook,
   SiTailwindcss,
@@ -18,72 +16,13 @@ import {
   TbShovel,
 } from 'react-icons/all';
 import { projectConfig } from '../../../../@dirt_project/dirt.json';
+import { Note } from '~/components/shared/Note/Note';
+import { Tree } from '~/components/temp/Tree';
 
 const ICON_SIZE = 24;
 
 const FolderIcon = <FaFolder size={ICON_SIZE} />;
 const FileIcon = <FaFileCode size={ICON_SIZE} />;
-
-interface NoteProps {
-  iconElement?: React.ReactNode;
-  labelText: string;
-  content: string;
-}
-
-const Note: FC<NoteProps> = ({ iconElement, labelText, content }) => {
-  return (
-    <div className="flex items-center gap-x-2">
-      {iconElement ? iconElement : <FaInfoCircle size={20} />}
-      <div className="flex flex-col justify-items-start text-left md:flex-row md:items-center md:gap-x-2">
-        <span className="underline italic">{labelText}</span>{' '}
-        <span className="text-slate-400">{content}</span>
-      </div>
-    </div>
-  );
-};
-
-type TreeProps = {
-  children?: React.ReactNode;
-};
-
-type ElementProps = {
-  rootElement?: Boolean;
-  icon: React.ReactElement;
-  title: string;
-  subtitle?: string;
-  children?: React.ReactNode;
-};
-
-const Tree: React.FC<TreeProps> & { Element: typeof Element } = ({
-  children,
-}: TreeProps) => {
-  return <div className="my-1">{children}</div>;
-};
-
-const Element = ({
-  rootElement,
-  icon,
-  title,
-  subtitle,
-  children,
-}: ElementProps): JSX.Element => {
-  return (
-    <div className={['-py-2 mb-2', rootElement ? 'ml-0' : 'ml-8'].join(' ')}>
-      <div className="flex items-center pl-2">
-        {icon}
-        <div className="flex flex-col px-2">
-          <span className="text-lg font-semibold">{title}</span>
-          {subtitle && (
-            <span className="text-sm text-slate-400 -mt-1">{subtitle}</span>
-          )}
-        </div>
-      </div>
-      <div>{children}</div>
-    </div>
-  );
-};
-
-Tree.Element = Element;
 
 type ProjectResource = {
   readonly rootElement?: boolean;
@@ -193,9 +132,12 @@ const Index = (): React.ReactNode => {
           D.I.R.T combines the power of{' '}
           <span className="font-bold text-white">D</span>
           jango, <span className="font-bold text-white">I</span>
-          nertiaJs, Reactivity of{' '}
-          <span className="font-bold text-white">R</span>
-          eact and smoothness of <span className="font-bold text-white">T</span>
+          nertiaJs, <span className="font-bold text-white">R</span>
+          eactive UI of{' '}
+          <span className="font-bold capitalize underline">
+            {projectConfig.frontend}
+          </span>{' '}
+          and smoothness of <span className="font-bold text-white">T</span>
           ailwind CSS.
         </p>
         <h2 className="text-white text-4xl font-heading">Ready to dig in?</h2>
