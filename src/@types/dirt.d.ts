@@ -24,6 +24,7 @@ declare namespace DIRTStackCLI {
     verboseLogs: boolean;
     withStorybook: boolean;
     installPrettier: boolean;
+    deploymentOption: DIRTDeploymentOpts;
   };
 
   export type MessageConfigOption = {
@@ -64,5 +65,29 @@ declare namespace DIRTStackCLI {
     STORY_BOOK_STORIES_PATH: string;
     STORY_BOOK_TEMPLATES_PATH: string;
     TEMPLATES_PATH: string;
+  };
+
+  export type DIRTDeploymentOpts = 'Vercel' | 'None';
+
+  export type DIRTVercelOpts = {
+    projectName: string;
+    destination: string;
+  };
+
+  export type DIRTVercelBuildOpt = {
+    src: string;
+    use: string;
+    config?: {
+      distDir: string;
+    };
+  };
+  export type DIRTVercelRoute = {
+    src: string;
+    dest: string;
+  };
+
+  export type DIRTVercelConfigFile = {
+    builds: [DIRTVercelBuildOpt];
+    routes: [DIRTVercelRoute];
   };
 }

@@ -25,7 +25,7 @@ module.exports = {
     extensions: ['.js', '.json', '.vue'],
   },
   build: {
-    outDir: resolve('./dirt_fe_vue/dist'),
+    outDir: resolve('./static/dist/js'),
     assetsDir: '',
     manifest: true,
     emptyOutDir: true,

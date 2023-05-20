@@ -1,0 +1,21 @@
+{
+  "builds": [
+    {
+      "src": "",
+      "use": "@vercel/python"
+    },
+    {
+      "src": "build_vercel.sh",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "staticfiles"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": ""
+    }
+  ]
+}
