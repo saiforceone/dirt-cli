@@ -1,6 +1,6 @@
 {
   "name": "@saiforceone/dirt-cli",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Official CLI Utility for the D.I.R.T stack",
   "bin": {
     "@saiforceone/create-dirt-stack": "bin/create-dirt-stack.js",
@@ -23,7 +23,9 @@
     "Django",
     "InertiaJs",
     "React",
-    "Tailwind CSS"
+    "Tailwind CSS",
+    "VueJs",
+    "django-vite"
   ],
   "type": "module",
   "author": "SaiForceOne / Sai",
