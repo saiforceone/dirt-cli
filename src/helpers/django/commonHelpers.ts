@@ -26,6 +26,7 @@ import {
   getVirtualEnvLocation,
   installDependencies,
   writeBaseSettings,
+  writeDatabaseSettings,
   writeDevSettings,
 } from '../../utils/djangoUtils.js';
 import ConsoleLogger from '../../utils/ConsoleLogger.js';
@@ -154,6 +155,19 @@ export async function scaffoldDjangoProcess(
   if (useVerboseLogs) ConsoleLogger.printOutput(secretKeyResult);
   if (!secretKeyResult.success) return secretKeyResult;
   if (useVerboseLogs) ConsoleLogger.printMessage(MESSAGE_SECRET_KEY_SET);
+
+  // Database
+  if (options['databaseOption'] !== 'None') {
+    if (useVerboseLogs)
+      ConsoleLogger.printMessage('Applying database settings...');
+    const databaseResult = await writeDatabaseSettings(
+      options.projectName,
+      devSettingsPath,
+      options['databaseOption']
+    );
+    if (useVerboseLogs) ConsoleLogger.printOutput(databaseResult);
+    if (!databaseResult.success) return databaseResult;
+  }
 
   // update base settings file
   const baseSettingsPath = path.join(

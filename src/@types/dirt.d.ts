@@ -25,6 +25,7 @@ declare namespace DIRTStackCLI {
     withStorybook: boolean;
     installPrettier: boolean;
     deploymentOption: DIRTDeploymentOpts;
+    databaseOption: DIRTDatabaseOpt;
   };
 
   export type MessageConfigOption = {
@@ -90,4 +91,28 @@ declare namespace DIRTStackCLI {
     builds: [DIRTVercelBuildOpt];
     routes: [DIRTVercelRoute];
   };
+
+  export type DIRTDatabaseOpt = 'None' | 'sqlite' | 'mysql' | 'postgresql';
+
+  export type DIRTDatabaseEngine = 'sqlite' | 'mysql' | 'postgresql';
+
+  /**
+   * "ENGINE": "django.db.backends.postgresql",
+   *         "NAME": "mydatabase",
+   *         "USER": "mydatabaseuser",
+   *         "PASSWORD": "mypassword",
+   *         "HOST": "127.0.0.1",
+   *         "PORT": "5432",
+   */
+
+  export type DIRTDatabaseConfig = {
+    ENGINE: Omit<'None', DIRTDatabaseOpt>;
+    NAME: string;
+    USER?: string;
+    PASSWORD?: string;
+    HOST?: string;
+    PORT?: string;
+  };
+
+  export type DIRTDatabaseSetting = Record<string, DIRTDatabaseConfig>;
 }
