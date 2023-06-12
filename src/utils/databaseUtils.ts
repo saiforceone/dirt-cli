@@ -3,7 +3,6 @@
  * scaffold process
  */
 import DIRTDatabaseOpt = DIRTStackCLI.DIRTDatabaseOpt;
-import DIRTDatabaseSetting = DIRTStackCLI.DIRTDatabaseSetting;
 
 function getPort(engine: string): string {
   const opts: { [key: string]: string } = {
@@ -24,7 +23,7 @@ function getPort(engine: string): string {
  * on the project name and the database username will be of the format:
  * <projectName>_admin. This forms the basis of your project's database settings
  * but can be changed or replaced as needed.
- */export function generateDatabaseSettings(
+ */ export function generateDatabaseSettings(
   projectName: string,
   databaseOpt: Omit<'None', DIRTDatabaseOpt>
 ): string {
@@ -41,7 +40,7 @@ function getPort(engine: string): string {
       \t'ENGINE': 'django.db.backends.${databaseOpt}',
       \t'USER': '${projectName}_admin',
       \t'NAME': '${projectName}',
-      \t'PASSWORD': 'change-this-password',
+      \t'PASSWORD': 'ch@nge-thi$-password!',
       \t'HOST': 'localhost',
       \t'PORT': '${getPort(databaseOpt as string)}',
     },
