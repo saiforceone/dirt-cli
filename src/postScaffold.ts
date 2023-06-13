@@ -16,6 +16,11 @@ function getDatabaseInstructions(dbOpt: string): string {
  )} if you haven't done so already before attempting to run any migrations.\n Refer to: ${chalk.underline(
       'https://pypi.org/project/mysqlclient/'
     )} for more information.
+ 2. Be sure to create your database based on settings in ${chalk.green(
+   'dirt_settings/dev.py'
+ )}
+ 3. Set an actual password for the database.
+ 4. Run migrations.
 `,
     postgresql: `
  ${chalk.blue.underline('Database Setup: Postgresql')}\n
@@ -24,12 +29,15 @@ function getDatabaseInstructions(dbOpt: string): string {
  )} if you haven't done so already.\n Refer to: ${chalk.underline(
       'https://www.psycopg.org/docs/install.html'
     )} for more information.
+ 2. Be sure to create your database based on settings in ${chalk.green(
+   'dirt_settings/dev.py'
+ )}
+ 3. Set an actual password for the database.
+ 4. Run migrations.
 `,
     sqlite: `
  ${chalk.blue.underline('Database Setup: SQLite')}\n
- ${chalk.bold(
-   'Note:'
- )} You're already good to go. Nothing else needs to be done.
+ ${chalk.bold('Note:')} You're already good to go. Just run the migrations.
 `,
   };
   return instructions[dbOpt] ?? '';
