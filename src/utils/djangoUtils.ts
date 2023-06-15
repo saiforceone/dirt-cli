@@ -17,6 +17,8 @@ import { FILE_COPY_OPTS } from '../constants/index.js';
 import { FRONTEND_PATHS } from '../constants/feConstants.js';
 import ScaffoldOutput = DIRTStackCLI.ScaffoldOutput;
 import DIRTCoreOpts = DIRTStackCLI.DIRTCoreOpts;
+import DIRTDatabaseOpt = DIRTStackCLI.DIRTDatabaseOpt;
+import { generateDatabaseSettings } from './databaseUtils.js';
 
 const require = createRequire(import.meta.url);
 const djangoDependencies = require('../../configs/djangoDependencies.json');
@@ -233,6 +235,27 @@ export async function writeBaseSettings(
     return output;
   } catch (e) {
     output.error = e.toString();
+    return output;
+  }
+}
+
+export async function writeDatabaseSettings(
+  projectName: string,
+  destination: string,
+  databaseOpt: Omit<'None', DIRTDatabaseOpt>
+): Promise<ScaffoldOutput> {
+  const output = standardOutputBuilder();
+  try {
+    // get the database options object that should be written to settings
+    const dbSettings = generateDatabaseSettings(projectName, databaseOpt);
+    // write to file
+    await appendFile(destination, `\n# DATABASE SETTINGS`);
+    await appendFile(destination, `\nDATABASES = ${dbSettings}`);
+
+    output.success = true;
+    return output;
+  } catch (e) {
+    output.error = (e as Error).message;
     return output;
   }
 }

@@ -25,6 +25,7 @@ declare namespace DIRTStackCLI {
     withStorybook: boolean;
     installPrettier: boolean;
     deploymentOption: DIRTDeploymentOpts;
+    databaseOption: DIRTDatabaseOpt;
   };
 
   export type MessageConfigOption = {
@@ -41,12 +42,6 @@ declare namespace DIRTStackCLI {
 
   export type DIRTDependenciesFile = {
     packages: Record<string, string>;
-  };
-
-  export type DIRTStorybookDependenciesFile = {
-    commonPackages: Record<string, string>;
-    react: Record<string, string>;
-    vue: Record<string, string>;
   };
 
   export type DIRTCoreOpts = {
@@ -89,5 +84,16 @@ declare namespace DIRTStackCLI {
   export type DIRTVercelConfigFile = {
     builds: [DIRTVercelBuildOpt];
     routes: [DIRTVercelRoute];
+  };
+
+  export type DIRTDatabaseOpt = 'None' | 'sqlite' | 'mysql' | 'postgresql';
+
+  export type DIRTDatabaseConfig = {
+    ENGINE: Omit<'None', DIRTDatabaseOpt>;
+    NAME: string;
+    USER?: string;
+    PASSWORD?: string;
+    HOST?: string;
+    PORT?: string;
   };
 }

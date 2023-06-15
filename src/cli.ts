@@ -15,6 +15,7 @@ import LogType = DIRTStackCLI.LogType;
 import ScaffoldOptions = DIRTStackCLI.ScaffoldOptions;
 import ScaffoldOutput = DIRTStackCLI.ScaffoldOutput;
 import { setupVercelDeployment } from './utils/deploymentSetupUtils.js';
+import { writeDatabaseSettings } from './utils/djangoUtils.js';
 
 const { scaffoldDjango } = await import('./scaffoldDjango.js');
 const { scaffoldFrontend } = await import('./scaffoldFrontend.js');
@@ -37,6 +38,13 @@ async function cliPrompts(): Promise<Answers> {
       message: 'Select a frontend framework / library',
       name: 'frontend',
       type: 'list',
+    },
+    {
+      choices: ['None', 'sqlite', 'mysql', 'postgresql'],
+      message: 'Select a database',
+      name: 'databaseOption',
+      type: 'list',
+      default: 'None',
     },
     {
       default: false,
@@ -100,6 +108,7 @@ function scaffoldFuncs(logType: LogType, options: ScaffoldOptions) {
         process.exit(1);
       }
 
+      // Prettier
       if (options['installPrettier']) {
         ConsoleLogger.printMessage('Installing prettier...');
         const prettierResult = await setupPrettier(process.cwd());
