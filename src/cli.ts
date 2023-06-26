@@ -15,7 +15,6 @@ import LogType = DIRTStackCLI.LogType;
 import ScaffoldOptions = DIRTStackCLI.ScaffoldOptions;
 import ScaffoldOutput = DIRTStackCLI.ScaffoldOutput;
 import { setupVercelDeployment } from './utils/deploymentSetupUtils.js';
-import { writeDatabaseSettings } from './utils/djangoUtils.js';
 
 const { scaffoldDjango } = await import('./scaffoldDjango.js');
 const { scaffoldFrontend } = await import('./scaffoldFrontend.js');

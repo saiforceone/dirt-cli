@@ -41,6 +41,8 @@ export async function writeProjectConfig(
     const fileContents = {
       projectConfig: {
         ...options,
+        // add dirt cli version
+        dirtCLIVersion: 'n/a',
       },
     };
 
