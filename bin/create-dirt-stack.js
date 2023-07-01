@@ -1,6 +1,5 @@
 #! /usr/bin/env node
 
-import console from 'node:console';
 import process from 'node:process';
 
 /**
@@ -10,18 +9,14 @@ import process from 'node:process';
  * @returns {Promise<void>}
  */
 async function execCli(args) {
-  console.log('args: ', args);
-
-  const useExec = args[2] && args[2] === '--exec';
-
-  if (useExec) {
-    // check 3rd arg
-    const { advCli } = await import('../dist/advancedCommand.js');
-    // get command and params
-    advCli().then();
+  // Execute advanced cli command processor
+  if (args.length > 2) {
+    const program = await import('../dist/advancedCli.js');
+    program.default.parse();
     return;
   }
 
+  // fallback to running default command
   const { cli } = await import('../dist/cli.js');
   cli().then();
 }
