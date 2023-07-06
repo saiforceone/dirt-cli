@@ -20,3 +20,12 @@ export function preScaffold() {
  Before we can scaffold your project, we have a few questions
 `);
 }
+
+/**
+ * @description Prints out a standard welcome message
+ */
+export function advCommandStart() {
+  console.log(`
+  ${gradient.pastel(asciiDirt)}
+`);
+}
