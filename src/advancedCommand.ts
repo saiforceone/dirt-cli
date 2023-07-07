@@ -75,8 +75,9 @@ export async function checkDirt(): Promise<boolean> {
       encoding: 'utf-8',
     });
     const configData = JSON.parse(fileContents) as DIRTProjectConfig;
+    console.log('configData: ', configData);
     // frontend check
-    if (!['react', 'vue'].includes(configData.frontend)) {
+    if (!['react', 'vue'].includes(configData.projectConfig.frontend)) {
       ConsoleLogger.printMessage(
         'Invalid frontend option in config file',
         'error'
@@ -86,7 +87,7 @@ export async function checkDirt(): Promise<boolean> {
     // database option check
     if (
       !['None', 'sqlite', 'mysql', 'postgresql'].includes(
-        configData.databaseOption
+        configData.projectConfig.databaseOption
       )
     ) {
       ConsoleLogger.printMessage(

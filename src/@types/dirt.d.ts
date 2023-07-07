@@ -97,8 +97,10 @@ declare namespace DIRTStackCLI {
     PORT?: string;
   };
 
-  export type DIRTProjectConfig = ScaffoldOptions & {
-    dirtCLIVersion?: string;
+  export type DIRTProjectConfig = {
+    projectConfig: ScaffoldOptions & {
+      dirtCLIVersion?: string;
+    };
   };
 
   export type DIRTAdvCommand = 'create-controller' | 'gen-secret-key';
