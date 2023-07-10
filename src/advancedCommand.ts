@@ -75,7 +75,6 @@ export async function checkDirt(): Promise<boolean> {
       encoding: 'utf-8',
     });
     const configData = JSON.parse(fileContents) as DIRTProjectConfig;
-    console.log('configData: ', configData);
     // frontend check
     if (!['react', 'vue'].includes(configData.projectConfig.frontend)) {
       ConsoleLogger.printMessage(
