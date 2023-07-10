@@ -2,6 +2,7 @@ import { Command } from '@commander-js/extra-typings';
 import ConsoleLogger from './utils/ConsoleLogger.js';
 import { checkDirt, cliInfo } from './advancedCommand.js';
 import { generateSecretKey } from './utils/generateSecretKey.js';
+import { validateProjectName } from './utils/validateProjectName.js';
 
 // Main program instance
 const program = new Command();
@@ -21,14 +22,12 @@ program
   });
 
 /**
- * todo: refactor / change from using exec
- * @description Exec command that runs advanced CLI commands
+ * @description Create a D.I.R.T Stack Controller (Django App)
  */
 program
-  .command('exec')
-  .description('Executes a given dirt-cli command')
-  .option(
-    '-c, --create-controller <controller>',
+  .command('create-controller <controller>')
+  .alias('create-app')
+  .description(
     'Creates a Django "app" within a scaffolded project with default templates where <controller> is the name of the Django app you would like to create'
   )
   .action(async (str, options) => {
@@ -38,8 +37,16 @@ program
         'This command was not run from a valid D.I.R.T Stack project',
         'error'
       );
+    // name check
+    if (!validateProjectName(str)) {
+      return ConsoleLogger.printMessage(
+        'The given controller name was not valid',
+        'error'
+      );
+    }
+
     ConsoleLogger.printMessage(
-      `This command was called with [${str.createController}] and options: ${options} but this is just a placeholder`
+      `This command was called with [${str}] and options: ${options} but this is just a placeholder`
     );
   });
 
