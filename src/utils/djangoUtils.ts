@@ -2,7 +2,13 @@ import { exec } from 'child_process';
 import fs from 'node:fs';
 import constants from 'node:constants';
 import path from 'node:path';
-import { access, appendFile, cp as copy, mkdir } from 'node:fs/promises';
+import {
+  access,
+  appendFile,
+  cp as copy,
+  mkdir,
+  writeFile,
+} from 'node:fs/promises';
 import { createRequire } from 'module';
 import {
   DIRT_TEMPLATES_FOLDER,
@@ -315,6 +321,49 @@ export async function copyAssets(
     return output;
   } catch (e) {
     output.error = `Failed to copy assets with error: ${(e as Error).message}`;
+    return output;
+  }
+}
+
+/**
+ * @description Writes the necessary data to the generated views.py file to make the inertia view work
+ * @param destinationPath
+ * @param controllerName
+ */
+export async function writeInertiaViewsFile(
+  destinationPath: string,
+  controllerName: string
+): Promise<ScaffoldOutput> {
+  const output = standardOutputBuilder();
+  try {
+    // get path to file
+    const filePath = path.join(
+      destinationPath,
+      controllerName.toLowerCase(),
+      'views.py'
+    );
+    // construct file contents
+    const fileContent = `
+      # Generated using D.I.R.T Stack CLI
+      \nimport inertia from inertia
+      \n# Create your views here.
+      \n\n@inertia('${controllerName}/Index')
+      \ndef index(request):
+      \n\treturn {
+      \n\t'controllerName': '${controllerName}'
+      }
+      \n\n
+    `;
+
+    // overwrite original views.py file that was created from django-admin startapp <app_name>
+    await writeFile(filePath, fileContent);
+
+    output.success = true;
+    return output;
+  } catch (e) {
+    output.error = `Failed to generate controller views file with error: ${
+      (e as Error).message
+    }`;
     return output;
   }
 }
