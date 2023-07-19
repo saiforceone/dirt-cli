@@ -45,6 +45,8 @@ program
       );
     }
 
+    // destination check
+
     ConsoleLogger.printMessage(
       `This command was called with [${str}] and options: ${options} but this is just a placeholder`
     );

@@ -43,6 +43,7 @@ import { normalizeWinFilePath } from '../../utils/fileUtils.js';
 import { LOCAL_ASSET_BUILDERS_PATH } from '../../constants/index.js';
 import ScaffoldOptions = DIRTStackCLI.ScaffoldOptions;
 import ScaffoldOutput = DIRTStackCLI.ScaffoldOutput;
+import { checkDestinationExistence } from '../../helpers/shared/coreHelpers.js';
 
 /**
  * @async
@@ -318,4 +319,62 @@ export async function scaffoldDjangoProcess(
   // finally, return output
   output.success = true;
   return output;
+}
+
+/**
+ * @description Executes the process to create a django application copying the
+ * necessary files to target locations
+ * @param destinationBase
+ * @param appName
+ */
+export async function createDjangoApp(
+  destinationBase: string,
+  appName: string
+): Promise<ScaffoldOutput> {
+  const output = standardOutputBuilder();
+  try {
+    // check destination existence
+    let targetPath = path.join(destinationBase, appName);
+    if (platform() === 'win32') targetPath = normalizeWinFilePath(targetPath);
+
+    if (!checkDestinationExistence(targetPath).success) {
+      output.error = 'Controller already exists. Exiting...';
+      return output;
+    }
+
+    // execute command to create the django application
+    if (os.platform() === 'win32') {
+      try {
+        await $`python manage.py startapp ${appName}`;
+      } catch (e) {
+        output.error = (e as Error).message;
+        return output;
+      }
+    } else {
+      try {
+        // get the path to the python executable
+        const envLocationResult = await getVirtualEnvLocation();
+        if (!envLocationResult.success) {
+          output.error = envLocationResult.error;
+          return output;
+        }
+        const envPath = envLocationResult.result.trim();
+        const pythonExecPath =
+          platform() === 'win32'
+            ? normalizeWinFilePath(path.join(envPath, 'Scripts', 'python.exe'))
+            : path.join(envPath, 'bin', 'python3');
+
+        // execute the command
+        const commandString = `${pythonExecPath} manage.py startapp ${appName}`;
+      } catch (e) {
+        output.error = (e as Error).message;
+        return output;
+      }
+    }
+
+    return output;
+  } catch (e) {
+    output.error = (e as Error).message;
+    return output;
+  }
 }

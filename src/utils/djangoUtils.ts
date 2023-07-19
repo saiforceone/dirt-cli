@@ -25,6 +25,7 @@ import ScaffoldOutput = DIRTStackCLI.ScaffoldOutput;
 import DIRTCoreOpts = DIRTStackCLI.DIRTCoreOpts;
 import DIRTDatabaseOpt = DIRTStackCLI.DIRTDatabaseOpt;
 import { generateDatabaseSettings } from './databaseUtils.js';
+import { checkDestinationExistence } from '../helpers/shared/coreHelpers.js';
 
 const require = createRequire(import.meta.url);
 const djangoDependencies = require('../../configs/djangoDependencies.json');
@@ -342,6 +343,10 @@ export async function writeInertiaViewsFile(
       controllerName.toLowerCase(),
       'views.py'
     );
+
+    // check destination existence
+    const folderPath = path.join(destinationPath, controllerName);
+
     // construct file contents
     const fileContent = `
       # Generated using D.I.R.T Stack CLI
