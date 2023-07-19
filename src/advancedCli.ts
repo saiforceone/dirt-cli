@@ -3,6 +3,9 @@ import ConsoleLogger from './utils/ConsoleLogger.js';
 import { checkDirt, cliInfo } from './advancedCommand.js';
 import { generateSecretKey } from './utils/generateSecretKey.js';
 import { validateProjectName } from './utils/validateProjectName.js';
+import { createDjangoApp } from './helpers/django/commonHelpers.js';
+import { writeInertiaViewsFile } from './utils/djangoUtils.js';
+import path from 'node:path';
 
 // Main program instance
 const program = new Command();
@@ -30,7 +33,7 @@ program
   .description(
     'Creates a Django "app" within a scaffolded project with default templates where <controller> is the name of the Django app you would like to create'
   )
-  .action(async (str, options) => {
+  .action(async (appName, options) => {
     const isValidProject = await checkDirt();
     if (!isValidProject)
       return ConsoleLogger.printMessage(
@@ -38,18 +41,23 @@ program
         'error'
       );
     // name check
-    if (!validateProjectName(str)) {
+    if (!validateProjectName(appName)) {
       return ConsoleLogger.printMessage(
         'The given controller name was not valid',
         'error'
       );
     }
 
-    // destination check
+    const currentDir = process.cwd();
 
-    ConsoleLogger.printMessage(
-      `This command was called with [${str}] and options: ${options} but this is just a placeholder`
-    );
+    // exec django app creation process
+    const createAppResult = await createDjangoApp(currentDir, appName);
+
+    ConsoleLogger.printOutput(createAppResult);
+
+    // ConsoleLogger.printMessage(
+    //   `This command was called with [${appName}] and options: ${options} but this is just a placeholder`
+    // );
   });
 
 /**

@@ -360,12 +360,17 @@ export async function writeInertiaViewsFile(
       \n\n
     `;
 
+    console.log(`try to write file: ${filePath}`);
+
     // overwrite original views.py file that was created from django-admin startapp <app_name>
-    await writeFile(filePath, fileContent);
+    await writeFile(filePath, fileContent, { encoding: 'utf-8' });
 
     output.success = true;
     return output;
   } catch (e) {
+    output.result = `Failed to generate controller view with error: ${
+      (e as Error).message
+    }`;
     output.error = `Failed to generate controller views file with error: ${
       (e as Error).message
     }`;

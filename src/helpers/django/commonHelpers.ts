@@ -1,7 +1,7 @@
 import os, { platform } from 'node:os';
 import { chmod, mkdir, rename, unlink } from 'node:fs/promises';
 import path from 'node:path';
-import { $, execaCommand } from 'execa';
+import { $, execa, execaCommand } from 'execa';
 import {
   BASE_PY_FILENAME,
   DEV_PY_FILENAME,
@@ -28,6 +28,7 @@ import {
   writeBaseSettings,
   writeDatabaseSettings,
   writeDevSettings,
+  writeInertiaViewsFile,
 } from '../../utils/djangoUtils.js';
 import ConsoleLogger from '../../utils/ConsoleLogger.js';
 import {
@@ -43,7 +44,25 @@ import { normalizeWinFilePath } from '../../utils/fileUtils.js';
 import { LOCAL_ASSET_BUILDERS_PATH } from '../../constants/index.js';
 import ScaffoldOptions = DIRTStackCLI.ScaffoldOptions;
 import ScaffoldOutput = DIRTStackCLI.ScaffoldOutput;
-import { checkDestinationExistence } from '../../helpers/shared/coreHelpers.js';
+import { checkDestinationExistence } from '../shared/coreHelpers.js';
+
+async function executeCommand(commandString: string): Promise<ScaffoldOutput> {
+  const output = standardOutputBuilder();
+  try {
+    if (platform() === 'win32') {
+      await $(STDIO_OPTS)`${commandString}`;
+    } else {
+      // exec for anything non-windows
+      await execaCommand(commandString).stdout?.pipe(process.stdout);
+    }
+    output.success = true;
+    return output;
+  } catch (e) {
+    output.result = 'Failed to execute command';
+    output.error = (e as Error).message;
+    return output;
+  }
+}
 
 /**
  * @async
@@ -322,6 +341,7 @@ export async function scaffoldDjangoProcess(
 }
 
 /**
+ * todo restructure order of steps being executed
  * @description Executes the process to create a django application copying the
  * necessary files to target locations
  * @param destinationBase
@@ -335,38 +355,61 @@ export async function createDjangoApp(
   try {
     // check destination existence
     let targetPath = path.join(destinationBase, appName);
+    ConsoleLogger.printMessage(
+      `attempting to scaffold app at target path: ${targetPath}`
+    );
     if (platform() === 'win32') targetPath = normalizeWinFilePath(targetPath);
 
-    if (!checkDestinationExistence(targetPath).success) {
+    if (checkDestinationExistence(targetPath).success) {
       output.error = 'Controller already exists. Exiting...';
       return output;
     }
 
+    // get the path to the python executable
+    const envLocationResult = await getVirtualEnvLocation();
+    if (!envLocationResult.success) {
+      output.error = envLocationResult.error;
+      return output;
+    }
+
+    const envPath = envLocationResult.result.trim();
+    const pythonExecPath =
+      platform() === 'win32'
+        ? normalizeWinFilePath(path.join(envPath, 'Scripts', 'python.exe'))
+        : path.join(envPath, 'bin', 'python3');
+
+    ConsoleLogger.printMessage(`python path: ${pythonExecPath}`);
+
     // execute command to create the django application
     if (os.platform() === 'win32') {
       try {
-        await $`python manage.py startapp ${appName}`;
+        await $(STDIO_OPTS)`python manage.py startapp ${appName}`;
       } catch (e) {
         output.error = (e as Error).message;
         return output;
       }
     } else {
       try {
-        // get the path to the python executable
-        const envLocationResult = await getVirtualEnvLocation();
-        if (!envLocationResult.success) {
-          output.error = envLocationResult.error;
-          return output;
-        }
-        const envPath = envLocationResult.result.trim();
-        const pythonExecPath =
-          platform() === 'win32'
-            ? normalizeWinFilePath(path.join(envPath, 'Scripts', 'python.exe'))
-            : path.join(envPath, 'bin', 'python3');
-
         // execute the command
         const commandString = `${pythonExecPath} manage.py startapp ${appName}`;
+
+        console.log('use command string: ', commandString);
+        console.log('running from: ', process.cwd());
+        const { stdout, stderr } = await execa(commandString);
+        console.log('stdout: ', stdout);
+
+        // overwrite urls.py file
+
+        // exec write files
+        const writeFilesResult = await writeInertiaViewsFile(
+          destinationBase,
+          appName
+        );
+
+        ConsoleLogger.printOutput(writeFilesResult);
+        // copy over templates
       } catch (e) {
+        console.log('failed to execute command with error: ', e.toString());
         output.error = (e as Error).message;
         return output;
       }
@@ -374,6 +417,7 @@ export async function createDjangoApp(
 
     return output;
   } catch (e) {
+    ConsoleLogger.printMessage(e.toString(), 'error');
     output.error = (e as Error).message;
     return output;
   }
