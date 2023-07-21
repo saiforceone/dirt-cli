@@ -362,6 +362,7 @@ export async function createDjangoApp(
 
     if (checkDestinationExistence(targetPath).success) {
       output.error = 'Controller already exists. Exiting...';
+      output.result = `Controller with name: [${appName}] already exists. Exiting...';`;
       return output;
     }
 
@@ -395,7 +396,7 @@ export async function createDjangoApp(
 
         console.log('use command string: ', commandString);
         console.log('running from: ', process.cwd());
-        const { stdout, stderr } = await execa(commandString);
+        const { stdout, stderr } = await execaCommand(commandString);
         console.log('stdout: ', stdout);
 
         // overwrite urls.py file

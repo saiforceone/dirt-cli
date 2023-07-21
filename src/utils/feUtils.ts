@@ -107,3 +107,18 @@ export async function updateNPMAttribs(
     return output;
   }
 }
+
+/**
+ * @description Why does JavaScript not have a way to do this still?
+ * @param text
+ */
+export function toTitleCase(text: string): string {
+  if (!text.length) return '';
+  return text
+    .trim()
+    .split(' ')
+    .map((word) => {
+      return `${word.slice(0, 1).toUpperCase()}${word.slice(1).toLowerCase()}`;
+    })
+    .join(' ');
+}

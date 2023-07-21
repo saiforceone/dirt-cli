@@ -26,6 +26,9 @@ import DIRTCoreOpts = DIRTStackCLI.DIRTCoreOpts;
 import DIRTDatabaseOpt = DIRTStackCLI.DIRTDatabaseOpt;
 import { generateDatabaseSettings } from './databaseUtils.js';
 import { checkDestinationExistence } from '../helpers/shared/coreHelpers.js';
+import Frontend = DIRTStackCLI.Frontend;
+import { toTitleCase } from '../utils/feUtils.js';
+import ConsoleLogger from '../utils/ConsoleLogger.js';
 
 const require = createRequire(import.meta.url);
 const djangoDependencies = require('../../configs/djangoDependencies.json');
@@ -330,10 +333,12 @@ export async function copyAssets(
  * @description Writes the necessary data to the generated views.py file to make the inertia view work
  * @param destinationPath
  * @param controllerName
+ * @param frontend
  */
 export async function writeInertiaViewsFile(
   destinationPath: string,
-  controllerName: string
+  controllerName: string,
+  frontend: Frontend = 'react'
 ): Promise<ScaffoldOutput> {
   const output = standardOutputBuilder();
   try {
@@ -349,21 +354,63 @@ export async function writeInertiaViewsFile(
 
     // construct file contents
     const fileContent = `
-      # Generated using D.I.R.T Stack CLI
-      \nimport inertia from inertia
-      \n# Create your views here.
-      \n\n@inertia('${controllerName}/Index')
-      \ndef index(request):
-      \n\treturn {
-      \n\t'controllerName': '${controllerName}'
-      }
-      \n\n
-    `;
+# Generated using D.I.R.T Stack CLI
+\nfrom inertia import inertia
+\n# Create your views here.
+\n\n@inertia('${controllerName}/Index')
+def index(request):
+\treturn {
+\t\t'controllerName': '${controllerName}'
+\t}
+\n\n
+`;
 
     console.log(`try to write file: ${filePath}`);
 
     // overwrite original views.py file that was created from django-admin startapp <app_name>
     await writeFile(filePath, fileContent, { encoding: 'utf-8' });
+
+    // construct the urls.py file for the controller
+    const urlsFilePath = path.join(
+      destinationPath,
+      controllerName.toLowerCase(),
+      'urls.py'
+    );
+
+    const urlsFileContent = `
+# Generated using D.I.R.T Stack CLI
+\nfrom django.urls import path
+\nfrom . import views
+\n\nurlpatterns = [
+\tpath('', views.index, name='${controllerName}')
+]
+\n
+`;
+    // overwrite original urls.py file that was created from django-admin startapp <app_name>
+    await writeFile(urlsFilePath, urlsFileContent, { encoding: 'utf-8' });
+
+    // overwrite main urls.py? or print out string to paste into main urls.py
+    ConsoleLogger.printMessage(
+      `Update the imports in your main [urls.py] as follows: from django.urls import path, include`,
+      'success'
+    );
+    ConsoleLogger.printMessage(
+      `Paste this into [urlpatterns] in your main [urls.py] file: path('${controllerName}/', include('${controllerName}.urls'))`,
+      'success'
+    );
+
+    // write out inertia template files
+    // determine target path for Inertia views
+    const inertiaViewsPath = path.join(
+      destinationPath,
+      `dirt_fe_${frontend}`,
+      'src',
+      'pages',
+      toTitleCase(controllerName),
+      'Index.tsx'
+    );
+
+    ConsoleLogger.printMessage(`Write page component to: ${inertiaViewsPath}`);
 
     output.success = true;
     return output;
