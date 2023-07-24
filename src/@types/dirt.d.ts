@@ -60,6 +60,7 @@ declare namespace DIRTStackCLI {
     STORY_BOOK_STORIES_PATH: string;
     STORY_BOOK_TEMPLATES_PATH: string;
     TEMPLATES_PATH: string;
+    TYPES_PATH: string;
   };
 
   export type DIRTDeploymentOpts = 'Vercel' | 'None';

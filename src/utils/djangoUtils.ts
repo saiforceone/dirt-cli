@@ -29,6 +29,7 @@ import { checkDestinationExistence } from '../helpers/shared/coreHelpers.js';
 import Frontend = DIRTStackCLI.Frontend;
 import { toTitleCase } from '../utils/feUtils.js';
 import ConsoleLogger from '../utils/ConsoleLogger.js';
+import { writeReactFrontendPage } from '../utils/frontendUtils.js';
 
 const require = createRequire(import.meta.url);
 const djangoDependencies = require('../../configs/djangoDependencies.json');
@@ -357,7 +358,7 @@ export async function writeInertiaViewsFile(
 # Generated using D.I.R.T Stack CLI
 \nfrom inertia import inertia
 \n# Create your views here.
-\n\n@inertia('${controllerName}/Index')
+\n\n@inertia('${toTitleCase(controllerName)}/Index')
 def index(request):
 \treturn {
 \t\t'controllerName': '${controllerName}'
@@ -399,7 +400,31 @@ def index(request):
       'success'
     );
 
+    const currentFileUrl = import.meta.url;
+    const reactFETypes = path.resolve(
+      new URL(currentFileUrl).pathname,
+      FRONTEND_PATHS[frontend].TYPES_PATH
+    );
+    const feTypesDestination = path.join(
+      destinationPath,
+      `dirt_fe_${frontend}`,
+      'src',
+      '@types'
+    );
+
+    await copy(reactFETypes, feTypesDestination, FILE_COPY_OPTS);
+
     // write out inertia template files
+    await mkdir(
+      path.join(
+        destinationPath,
+        `dirt_fe_${frontend}`,
+        'src',
+        'pages',
+        toTitleCase(controllerName)
+      )
+    );
+
     // determine target path for Inertia views
     const inertiaViewsPath = path.join(
       destinationPath,
@@ -411,6 +436,12 @@ def index(request):
     );
 
     ConsoleLogger.printMessage(`Write page component to: ${inertiaViewsPath}`);
+
+    const reactFEIndexContent = writeReactFrontendPage();
+
+    await writeFile(inertiaViewsPath, reactFEIndexContent, {
+      encoding: 'utf-8',
+    });
 
     output.success = true;
     return output;

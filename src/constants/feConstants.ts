@@ -24,6 +24,7 @@ export const FRONTEND_PATHS: Record<Frontend, DIRTPathOpts> = {
     STORY_BOOK_STORIES_PATH: '../../../templates/react-storybook-stories',
     STORY_BOOK_TEMPLATES_PATH: '../../../templates/react-storybook-templates',
     TEMPLATES_PATH: '../../../templates/react-templates',
+    TYPES_PATH: '../../../templates/controller-templates/react/@types',
   },
   vue: {
     BASE_HTML_TEMPLATES_PATH: '../../../templates/django-html-templates/vue',
@@ -31,5 +32,6 @@ export const FRONTEND_PATHS: Record<Frontend, DIRTPathOpts> = {
     STORY_BOOK_STORIES_PATH: '../../../templates/vue-storybook-stories',
     STORY_BOOK_TEMPLATES_PATH: '../../../templates/vue-storybook-templates',
     TEMPLATES_PATH: '../../../templates/vue-templates',
+    TYPES_PATH: '../../../templates/controller-templates/vue/@types',
   },
 };
