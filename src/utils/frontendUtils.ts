@@ -266,7 +266,7 @@ const Main = ({ controllerName }: BaseControllerProps): React.ReactNode => {
           <p className="text-white">
             To change the props that are passed to this inertia view, edit the
             dictionary returned by the following file:{' '}
-            <span className="font-semibold bg-blue-800 px-1 rounded">{controllerName}/views.py'</span>
+            <span className="font-semibold bg-blue-800 px-1 rounded">{controllerName}/views.py</span>
           </p>
         </div>
         <h3 className="text-2xl sm:text-3xl text-white font-heading underline">
