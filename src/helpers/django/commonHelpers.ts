@@ -1,7 +1,7 @@
 import os, { platform } from 'node:os';
 import { chmod, mkdir, rename, unlink } from 'node:fs/promises';
 import path from 'node:path';
-import { $, execa, execaCommand } from 'execa';
+import { $, execaCommand } from 'execa';
 import {
   BASE_PY_FILENAME,
   DEV_PY_FILENAME,
@@ -44,7 +44,9 @@ import { normalizeWinFilePath } from '../../utils/fileUtils.js';
 import { LOCAL_ASSET_BUILDERS_PATH } from '../../constants/index.js';
 import ScaffoldOptions = DIRTStackCLI.ScaffoldOptions;
 import ScaffoldOutput = DIRTStackCLI.ScaffoldOutput;
+import Frontend = DIRTStackCLI.Frontend;
 import { checkDestinationExistence } from '../shared/coreHelpers.js';
+import LogType = DIRTStackCLI.LogType;
 
 async function executeCommand(commandString: string): Promise<ScaffoldOutput> {
   const output = standardOutputBuilder();
@@ -341,23 +343,28 @@ export async function scaffoldDjangoProcess(
 }
 
 /**
- * todo restructure order of steps being executed
  * @description Executes the process to create a django application copying the
  * necessary files to target locations
  * @param destinationBase
  * @param appName
+ * @param frontendOption
+ * @param logType
  */
 export async function createDjangoApp(
   destinationBase: string,
-  appName: string
+  appName: string,
+  frontendOption: Frontend,
+  logType: LogType
 ): Promise<ScaffoldOutput> {
   const output = standardOutputBuilder();
   try {
     // check destination existence
     let targetPath = path.join(destinationBase, appName);
-    ConsoleLogger.printMessage(
-      `attempting to scaffold app at target path: ${targetPath}`
-    );
+    if (logType === 'noisyLogs') {
+      ConsoleLogger.printMessage(
+        `attempting to scaffold app at target path: ${targetPath}`
+      );
+    }
     if (platform() === 'win32') targetPath = normalizeWinFilePath(targetPath);
 
     if (checkDestinationExistence(targetPath).success) {
@@ -379,7 +386,8 @@ export async function createDjangoApp(
         ? normalizeWinFilePath(path.join(envPath, 'Scripts', 'python.exe'))
         : path.join(envPath, 'bin', 'python3');
 
-    ConsoleLogger.printMessage(`python path: ${pythonExecPath}`);
+    if (logType === 'noisyLogs')
+      ConsoleLogger.printMessage(`python path: ${pythonExecPath}`);
 
     // execute command to create the django application
     if (os.platform() === 'win32') {
@@ -394,23 +402,27 @@ export async function createDjangoApp(
         // execute the command
         const commandString = `${pythonExecPath} manage.py startapp ${appName}`;
 
-        console.log('use command string: ', commandString);
-        console.log('running from: ', process.cwd());
-        const { stdout, stderr } = await execaCommand(commandString);
-        console.log('stdout: ', stdout);
+        if (logType === 'noisyLogs') {
+          ConsoleLogger.printMessage(`using command string:  ${commandString}`);
+          ConsoleLogger.printMessage(`running from: ${process.cwd()}`);
+        }
 
-        // overwrite urls.py file
+        await execaCommand(commandString);
 
         // exec write files
         const writeFilesResult = await writeInertiaViewsFile(
           destinationBase,
-          appName
+          appName,
+          frontendOption
         );
 
-        ConsoleLogger.printOutput(writeFilesResult);
-        // copy over templates
+        if (logType === 'noisyLogs')
+          ConsoleLogger.printOutput(writeFilesResult);
       } catch (e) {
-        console.log('failed to execute command with error: ', e.toString());
+        if (logType === 'noisyLogs')
+          ConsoleLogger.printMessage(
+            `failed to execute command with error: ${e.toString()}`
+          );
         output.error = (e as Error).message;
         return output;
       }
@@ -418,7 +430,8 @@ export async function createDjangoApp(
 
     return output;
   } catch (e) {
-    ConsoleLogger.printMessage(e.toString(), 'error');
+    if (logType === 'noisyLogs')
+      ConsoleLogger.printMessage(e.toString(), 'error');
     output.error = (e as Error).message;
     return output;
   }

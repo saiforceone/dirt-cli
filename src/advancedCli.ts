@@ -4,8 +4,6 @@ import { checkDirt, cliInfo } from './advancedCommand.js';
 import { generateSecretKey } from './utils/generateSecretKey.js';
 import { validateProjectName } from './utils/validateProjectName.js';
 import { createDjangoApp } from './helpers/django/commonHelpers.js';
-import { writeInertiaViewsFile } from './utils/djangoUtils.js';
-import path from 'node:path';
 
 // Main program instance
 const program = new Command();
@@ -33,13 +31,15 @@ program
   .description(
     'Creates a Django "app" within a scaffolded project with default templates where <controller> is the name of the Django app you would like to create'
   )
+  .option('-v, --verbose', 'Shows verbose logs')
   .action(async (appName, options) => {
-    const isValidProject = await checkDirt();
-    if (!isValidProject)
+    const { success: isValidProject, frontendOption } = await checkDirt();
+    if (!isValidProject || !frontendOption)
       return ConsoleLogger.printMessage(
         'This command was not run from a valid D.I.R.T Stack project',
         'error'
       );
+
     // name check
     if (!validateProjectName(appName)) {
       return ConsoleLogger.printMessage(
@@ -51,9 +51,14 @@ program
     const currentDir = process.cwd();
 
     // exec django app creation process
-    const createAppResult = await createDjangoApp(currentDir, appName);
+    const createAppResult = await createDjangoApp(
+      currentDir,
+      appName,
+      frontendOption,
+      options?.verbose ? 'noisyLogs' : 'quietLogs'
+    );
 
-    ConsoleLogger.printOutput(createAppResult);
+    if (options.verbose) ConsoleLogger.printOutput(createAppResult);
 
     // ConsoleLogger.printMessage(
     //   `This command was called with [${appName}] and options: ${options} but this is just a placeholder`

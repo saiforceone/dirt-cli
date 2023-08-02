@@ -1,3 +1,4 @@
+import chalk from 'chalk';
 import { exec } from 'child_process';
 import fs from 'node:fs';
 import constants from 'node:constants';
@@ -25,11 +26,14 @@ import ScaffoldOutput = DIRTStackCLI.ScaffoldOutput;
 import DIRTCoreOpts = DIRTStackCLI.DIRTCoreOpts;
 import DIRTDatabaseOpt = DIRTStackCLI.DIRTDatabaseOpt;
 import { generateDatabaseSettings } from './databaseUtils.js';
-import { checkDestinationExistence } from '../helpers/shared/coreHelpers.js';
 import Frontend = DIRTStackCLI.Frontend;
-import { toTitleCase } from '../utils/feUtils.js';
+import { toTitleCase } from './feUtils.js';
 import ConsoleLogger from '../utils/ConsoleLogger.js';
-import { writeReactFrontendPage } from '../utils/frontendUtils.js';
+import {
+  writeReactFrontendPage,
+  writeVueFrontendPage,
+} from './frontendUtils.js';
+import LogType = DIRTStackCLI.LogType;
 
 const require = createRequire(import.meta.url);
 const djangoDependencies = require('../../configs/djangoDependencies.json');
@@ -335,11 +339,13 @@ export async function copyAssets(
  * @param destinationPath
  * @param controllerName
  * @param frontend
+ * @param logType
  */
 export async function writeInertiaViewsFile(
   destinationPath: string,
   controllerName: string,
-  frontend: Frontend = 'react'
+  frontend: Frontend,
+  logType: LogType
 ): Promise<ScaffoldOutput> {
   const output = standardOutputBuilder();
   try {
@@ -349,9 +355,6 @@ export async function writeInertiaViewsFile(
       controllerName.toLowerCase(),
       'views.py'
     );
-
-    // check destination existence
-    const folderPath = path.join(destinationPath, controllerName);
 
     // construct file contents
     const fileContent = `
@@ -365,8 +368,6 @@ def index(request):
 \t}
 \n\n
 `;
-
-    console.log(`try to write file: ${filePath}`);
 
     // overwrite original views.py file that was created from django-admin startapp <app_name>
     await writeFile(filePath, fileContent, { encoding: 'utf-8' });
@@ -391,28 +392,36 @@ def index(request):
     await writeFile(urlsFilePath, urlsFileContent, { encoding: 'utf-8' });
 
     // overwrite main urls.py? or print out string to paste into main urls.py
-    ConsoleLogger.printMessage(
-      `Update the imports in your main [urls.py] as follows: from django.urls import path, include`,
-      'success'
-    );
-    ConsoleLogger.printMessage(
-      `Paste this into [urlpatterns] in your main [urls.py] file: path('${controllerName}/', include('${controllerName}.urls'))`,
-      'success'
-    );
+    console.log(`
+ ${chalk.green.underline('D.I.R.T CLI Create Controller Output')}\n
+ Update your main ${chalk.blue.bold('urls.py')} file as follows
+ 1. Import the ${chalk.blue.bold('include')} function from ${chalk.blue.bold(
+      'django.urls'
+    )}\n
+ ${chalk.green('from django.urls import path, include')}\n
+ 2. Add this entry to ${chalk.bold('urlpatterns')}\n
+ ${chalk.green(
+   `path('${controllerName}/', include('${controllerName}.urls')),`
+ )}
+`);
 
     const currentFileUrl = import.meta.url;
-    const reactFETypes = path.resolve(
-      new URL(currentFileUrl).pathname,
-      FRONTEND_PATHS[frontend].TYPES_PATH
-    );
-    const feTypesDestination = path.join(
-      destinationPath,
-      `dirt_fe_${frontend}`,
-      'src',
-      '@types'
-    );
 
-    await copy(reactFETypes, feTypesDestination, FILE_COPY_OPTS);
+    if (frontend === 'react') {
+      const reactFETypes = path.resolve(
+        new URL(currentFileUrl).pathname,
+        FRONTEND_PATHS[frontend].TYPES_PATH
+      );
+
+      const feTypesDestination = path.join(
+        destinationPath,
+        `dirt_fe_${frontend}`,
+        'src',
+        '@types'
+      );
+
+      await copy(reactFETypes, feTypesDestination, FILE_COPY_OPTS);
+    }
 
     // write out inertia template files
     await mkdir(
@@ -425,6 +434,8 @@ def index(request):
       )
     );
 
+    const templateFileExt = frontend === 'react' ? 'tsx' : 'vue';
+
     // determine target path for Inertia views
     const inertiaViewsPath = path.join(
       destinationPath,
@@ -432,14 +443,18 @@ def index(request):
       'src',
       'pages',
       toTitleCase(controllerName),
-      'Index.tsx'
+      `Index.${templateFileExt}`
     );
 
-    ConsoleLogger.printMessage(`Write page component to: ${inertiaViewsPath}`);
+    if (logType === 'noisyLogs')
+      ConsoleLogger.printMessage(
+        `Write page component to: ${inertiaViewsPath}`
+      );
 
-    const reactFEIndexContent = writeReactFrontendPage();
+    const frontendIndexContent =
+      frontend === 'react' ? writeReactFrontendPage() : writeVueFrontendPage();
 
-    await writeFile(inertiaViewsPath, reactFEIndexContent, {
+    await writeFile(inertiaViewsPath, frontendIndexContent, {
       encoding: 'utf-8',
     });
 

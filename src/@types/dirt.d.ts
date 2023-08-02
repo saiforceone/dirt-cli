@@ -104,5 +104,10 @@ declare namespace DIRTStackCLI {
     };
   };
 
+  export type DIRTCheckResponse = {
+    success: boolean;
+    frontendOption?: Frontend;
+  };
+
   export type DIRTAdvCommand = 'create-controller' | 'gen-secret-key';
 }
