@@ -413,7 +413,8 @@ export async function createDjangoApp(
         const writeFilesResult = await writeInertiaViewsFile(
           destinationBase,
           appName,
-          frontendOption
+          frontendOption,
+          logType
         );
 
         if (logType === 'noisyLogs')
