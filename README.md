@@ -102,7 +102,7 @@ When the command runs, the necessary files will be created. Once that is done, y
 #### Technical Stuff
 When the `create-controller` command is run, the following processes take place:
 * A Django application is created within the project matching the name specified. 
-* The corresponding InertiaJS View is then created `[project_root]/dirt_fe_[react|vue]/src/pages/[controller_name]/Index.[react|vue]`
+* The corresponding InertiaJS View is then created `[project_root]/dirt_fe_[react|vue]/src/pages/[controller_name]/Index.[tsx|vue]`
 
 ### Known issues
 
