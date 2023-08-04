@@ -393,8 +393,8 @@ def index(request):
 
     // overwrite main urls.py? or print out string to paste into main urls.py
     console.log(`
- ${chalk.green.underline('D.I.R.T CLI Create Controller Output')}\n
- Update your main ${chalk.blue.bold('urls.py')} file as follows
+ ${chalk.green.underline('D.I.R.T CLI Controller Created')}\n
+ Update your main ${chalk.blue.bold('urls.py')} file as follows\n
  1. Import the ${chalk.blue.bold('include')} function from ${chalk.blue.bold(
       'django.urls'
     )}\n
@@ -402,7 +402,9 @@ def index(request):
  2. Add this entry to ${chalk.bold('urlpatterns')}\n
  ${chalk.green(
    `path('${controllerName}/', include('${controllerName}.urls')),`
- )}
+ )}\n
+ 3. Navigate to the newly-created controller\n
+ ${chalk.green(`http://127.0.0.1:8000/${controllerName}/`)}
 `);
 
     const currentFileUrl = import.meta.url;
