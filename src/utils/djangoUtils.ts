@@ -1,8 +1,15 @@
+import chalk from 'chalk';
 import { exec } from 'child_process';
 import fs from 'node:fs';
 import constants from 'node:constants';
 import path from 'node:path';
-import { access, appendFile, cp as copy, mkdir } from 'node:fs/promises';
+import {
+  access,
+  appendFile,
+  cp as copy,
+  mkdir,
+  writeFile,
+} from 'node:fs/promises';
 import { createRequire } from 'module';
 import {
   DIRT_TEMPLATES_FOLDER,
@@ -19,6 +26,14 @@ import ScaffoldOutput = DIRTStackCLI.ScaffoldOutput;
 import DIRTCoreOpts = DIRTStackCLI.DIRTCoreOpts;
 import DIRTDatabaseOpt = DIRTStackCLI.DIRTDatabaseOpt;
 import { generateDatabaseSettings } from './databaseUtils.js';
+import Frontend = DIRTStackCLI.Frontend;
+import { toTitleCase } from './feUtils.js';
+import ConsoleLogger from '../utils/ConsoleLogger.js';
+import {
+  writeReactFrontendPage,
+  writeVueFrontendPage,
+} from './frontendUtils.js';
+import LogType = DIRTStackCLI.LogType;
 
 const require = createRequire(import.meta.url);
 const djangoDependencies = require('../../configs/djangoDependencies.json');
@@ -315,6 +330,145 @@ export async function copyAssets(
     return output;
   } catch (e) {
     output.error = `Failed to copy assets with error: ${(e as Error).message}`;
+    return output;
+  }
+}
+
+/**
+ * @description Writes the necessary data to the generated views.py file to make the inertia view work
+ * @param destinationPath
+ * @param controllerName
+ * @param frontend
+ * @param logType
+ */
+export async function writeInertiaViewsFile(
+  destinationPath: string,
+  controllerName: string,
+  frontend: Frontend,
+  logType: LogType
+): Promise<ScaffoldOutput> {
+  const output = standardOutputBuilder();
+  try {
+    // get path to file
+    const filePath = path.join(
+      destinationPath,
+      controllerName.toLowerCase(),
+      'views.py'
+    );
+
+    // construct file contents
+    const fileContent = `
+# Generated using D.I.R.T Stack CLI
+\nfrom inertia import inertia
+\n# Create your views here.
+\n\n@inertia('${toTitleCase(controllerName)}/Index')
+def index(request):
+\treturn {
+\t\t'controllerName': '${controllerName}'
+\t}
+\n\n
+`;
+
+    // overwrite original views.py file that was created from django-admin startapp <app_name>
+    await writeFile(filePath, fileContent, { encoding: 'utf-8' });
+
+    // construct the urls.py file for the controller
+    const urlsFilePath = path.join(
+      destinationPath,
+      controllerName.toLowerCase(),
+      'urls.py'
+    );
+
+    const urlsFileContent = `
+# Generated using D.I.R.T Stack CLI
+\nfrom django.urls import path
+\nfrom . import views
+\n\nurlpatterns = [
+\tpath('', views.index, name='${controllerName}')
+]
+\n
+`;
+    // overwrite original urls.py file that was created from django-admin startapp <app_name>
+    await writeFile(urlsFilePath, urlsFileContent, { encoding: 'utf-8' });
+
+    // overwrite main urls.py? or print out string to paste into main urls.py
+    console.log(`
+ ${chalk.green.underline('D.I.R.T CLI Controller Created')}\n
+ Update your main ${chalk.blue.bold('urls.py')} file as follows\n
+ 1. Import the ${chalk.blue.bold('include')} function from ${chalk.blue.bold(
+      'django.urls'
+    )}\n
+ ${chalk.green('from django.urls import path, include')}\n
+ 2. Add this entry to ${chalk.bold('urlpatterns')}\n
+ ${chalk.green(
+   `path('${controllerName}/', include('${controllerName}.urls')),`
+ )}\n
+ 3. Navigate to the newly-created controller\n
+ ${chalk.green(`http://127.0.0.1:8000/${controllerName}/`)}
+`);
+
+    const currentFileUrl = import.meta.url;
+
+    if (frontend === 'react') {
+      const reactFETypes = path.resolve(
+        new URL(currentFileUrl).pathname,
+        FRONTEND_PATHS[frontend].TYPES_PATH
+      );
+
+      const feTypesDestination = path.join(
+        destinationPath,
+        `dirt_fe_${frontend}`,
+        'src',
+        '@types'
+      );
+
+      await copy(reactFETypes, feTypesDestination, FILE_COPY_OPTS);
+    }
+
+    // write out inertia template files
+    await mkdir(
+      path.join(
+        destinationPath,
+        `dirt_fe_${frontend}`,
+        'src',
+        'pages',
+        toTitleCase(controllerName)
+      )
+    );
+
+    const templateFileExt = frontend === 'react' ? 'tsx' : 'vue';
+
+    // determine target path for Inertia views
+    const inertiaViewsPath = path.join(
+      destinationPath,
+      `dirt_fe_${frontend}`,
+      'src',
+      'pages',
+      toTitleCase(controllerName),
+      `Index.${templateFileExt}`
+    );
+
+    if (logType === 'noisyLogs')
+      ConsoleLogger.printMessage(
+        `Write page component to: ${inertiaViewsPath}`
+      );
+
+    const frontendIndexContent =
+      frontend === 'react' ? writeReactFrontendPage() : writeVueFrontendPage();
+
+    await writeFile(inertiaViewsPath, frontendIndexContent, {
+      encoding: 'utf-8',
+    });
+
+    output.success = true;
+    return output;
+  } catch (e) {
+    output.result = `Failed to generate controller view with error: ${
+      (e as Error).message
+    }`;
+    output.error = `Failed to generate controller views file with error: ${
+      (e as Error).message
+    }`;
     return output;
   }
 }

@@ -28,6 +28,7 @@ import {
   writeBaseSettings,
   writeDatabaseSettings,
   writeDevSettings,
+  writeInertiaViewsFile,
 } from '../../utils/djangoUtils.js';
 import ConsoleLogger from '../../utils/ConsoleLogger.js';
 import {
@@ -43,6 +44,27 @@ import { normalizeWinFilePath } from '../../utils/fileUtils.js';
 import { LOCAL_ASSET_BUILDERS_PATH } from '../../constants/index.js';
 import ScaffoldOptions = DIRTStackCLI.ScaffoldOptions;
 import ScaffoldOutput = DIRTStackCLI.ScaffoldOutput;
+import Frontend = DIRTStackCLI.Frontend;
+import { checkDestinationExistence } from '../shared/coreHelpers.js';
+import LogType = DIRTStackCLI.LogType;
+
+async function executeCommand(commandString: string): Promise<ScaffoldOutput> {
+  const output = standardOutputBuilder();
+  try {
+    if (platform() === 'win32') {
+      await $(STDIO_OPTS)`${commandString}`;
+    } else {
+      // exec for anything non-windows
+      await execaCommand(commandString).stdout?.pipe(process.stdout);
+    }
+    output.success = true;
+    return output;
+  } catch (e) {
+    output.result = 'Failed to execute command';
+    output.error = (e as Error).message;
+    return output;
+  }
+}
 
 /**
  * @async
@@ -318,4 +340,100 @@ export async function scaffoldDjangoProcess(
   // finally, return output
   output.success = true;
   return output;
+}
+
+/**
+ * @description Executes the process to create a django application copying the
+ * necessary files to target locations
+ * @param destinationBase
+ * @param appName
+ * @param frontendOption
+ * @param logType
+ */
+export async function createDjangoApp(
+  destinationBase: string,
+  appName: string,
+  frontendOption: Frontend,
+  logType: LogType
+): Promise<ScaffoldOutput> {
+  const output = standardOutputBuilder();
+  try {
+    // check destination existence
+    let targetPath = path.join(destinationBase, appName);
+    if (logType === 'noisyLogs') {
+      ConsoleLogger.printMessage(
+        `attempting to scaffold app at target path: ${targetPath}`
+      );
+    }
+    if (platform() === 'win32') targetPath = normalizeWinFilePath(targetPath);
+
+    if (checkDestinationExistence(targetPath).success) {
+      output.error = 'Controller already exists. Exiting...';
+      output.result = `Controller with name: [${appName}] already exists. Exiting...';`;
+      return output;
+    }
+
+    // get the path to the python executable
+    const envLocationResult = await getVirtualEnvLocation();
+    if (!envLocationResult.success) {
+      output.error = envLocationResult.error;
+      return output;
+    }
+
+    const envPath = envLocationResult.result.trim();
+    const pythonExecPath =
+      platform() === 'win32'
+        ? normalizeWinFilePath(path.join(envPath, 'Scripts', 'python.exe'))
+        : path.join(envPath, 'bin', 'python3');
+
+    if (logType === 'noisyLogs')
+      ConsoleLogger.printMessage(`python path: ${pythonExecPath}`);
+
+    // execute command to create the django application
+    if (os.platform() === 'win32') {
+      try {
+        await $(STDIO_OPTS)`python manage.py startapp ${appName}`;
+      } catch (e) {
+        output.error = (e as Error).message;
+        return output;
+      }
+    } else {
+      try {
+        // execute the command
+        const commandString = `${pythonExecPath} manage.py startapp ${appName}`;
+
+        if (logType === 'noisyLogs') {
+          ConsoleLogger.printMessage(`using command string:  ${commandString}`);
+          ConsoleLogger.printMessage(`running from: ${process.cwd()}`);
+        }
+
+        await execaCommand(commandString);
+
+        // exec write files
+        const writeFilesResult = await writeInertiaViewsFile(
+          destinationBase,
+          appName,
+          frontendOption,
+          logType
+        );
+
+        if (logType === 'noisyLogs')
+          ConsoleLogger.printOutput(writeFilesResult);
+      } catch (e) {
+        if (logType === 'noisyLogs')
+          ConsoleLogger.printMessage(
+            `failed to execute command with error: ${e.toString()}`
+          );
+        output.error = (e as Error).message;
+        return output;
+      }
+    }
+
+    return output;
+  } catch (e) {
+    if (logType === 'noisyLogs')
+      ConsoleLogger.printMessage(e.toString(), 'error');
+    output.error = (e as Error).message;
+    return output;
+  }
 }

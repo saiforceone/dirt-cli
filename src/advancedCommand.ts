@@ -9,6 +9,7 @@ import { platform } from 'node:os';
 import path from 'node:path';
 
 import DIRTProjectConfig = DIRTStackCLI.DIRTProjectConfig;
+import DIRTCheckResponse = DIRTStackCLI.DIRTCheckResponse;
 import {
   DIRT_PROJECT_FOLDER_NAME,
   DIRT_PROJECT_CONFIG_FILE_NAME,
@@ -58,7 +59,7 @@ export async function cliInfo(): Promise<void> {
  * run from a dirt project folder. This might be overkill...or not.
  * @returns boolean
  */
-export async function checkDirt(): Promise<boolean> {
+export async function checkDirt(): Promise<DIRTCheckResponse> {
   // get the current dir
   const currentDir = process.cwd();
   // check for the files and folders
@@ -68,7 +69,7 @@ export async function checkDirt(): Promise<boolean> {
     DIRT_PROJECT_CONFIG_FILE_NAME
   );
 
-  if (!existsSync(dirtSettingsFile)) return false;
+  if (!existsSync(dirtSettingsFile)) return { success: false };
 
   try {
     const fileContents = await readFile(dirtSettingsFile, {
@@ -81,7 +82,7 @@ export async function checkDirt(): Promise<boolean> {
         'Invalid frontend option in config file',
         'error'
       );
-      return false;
+      return { success: false };
     }
     // database option check
     if (
@@ -93,17 +94,20 @@ export async function checkDirt(): Promise<boolean> {
         'Invalid database option in config file',
         'error'
       );
-      return false;
+      return { success: false };
     }
+
+    return {
+      success: true,
+      frontendOption: configData.projectConfig.frontend,
+    };
   } catch (e) {
     ConsoleLogger.printMessage(
       `Failed to read settings file with error: ${(e as Error).message}`,
       'error'
     );
-    return false;
+    return { success: false };
   }
-
-  return true;
 }
 
 /**

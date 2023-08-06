@@ -2,6 +2,8 @@ import { Command } from '@commander-js/extra-typings';
 import ConsoleLogger from './utils/ConsoleLogger.js';
 import { checkDirt, cliInfo } from './advancedCommand.js';
 import { generateSecretKey } from './utils/generateSecretKey.js';
+import { validateProjectName } from './utils/validateProjectName.js';
+import { createDjangoApp } from './helpers/django/commonHelpers.js';
 
 // Main program instance
 const program = new Command();
@@ -21,26 +23,46 @@ program
   });
 
 /**
- * todo: refactor / change from using exec
- * @description Exec command that runs advanced CLI commands
+ * @description Create a D.I.R.T Stack Controller (Django App)
  */
 program
-  .command('exec')
-  .description('Executes a given dirt-cli command')
-  .option(
-    '-c, --create-controller <controller>',
+  .command('create-controller <controller>')
+  .alias('create-app')
+  .description(
     'Creates a Django "app" within a scaffolded project with default templates where <controller> is the name of the Django app you would like to create'
   )
-  .action(async (str, options) => {
-    const isValidProject = await checkDirt();
-    if (!isValidProject)
+  .option('-v, --verbose', 'Shows verbose logs')
+  .action(async (appName, options) => {
+    const { success: isValidProject, frontendOption } = await checkDirt();
+    if (!isValidProject || !frontendOption)
       return ConsoleLogger.printMessage(
         'This command was not run from a valid D.I.R.T Stack project',
         'error'
       );
-    ConsoleLogger.printMessage(
-      `This command was called with [${str.createController}] and options: ${options} but this is just a placeholder`
+
+    // name check
+    if (!validateProjectName(appName)) {
+      return ConsoleLogger.printMessage(
+        'The given controller name was not valid',
+        'error'
+      );
+    }
+
+    const currentDir = process.cwd();
+
+    // exec django app creation process
+    const createAppResult = await createDjangoApp(
+      currentDir,
+      appName,
+      frontendOption,
+      options?.verbose ? 'noisyLogs' : 'quietLogs'
     );
+
+    if (options.verbose) ConsoleLogger.printOutput(createAppResult);
+
+    // ConsoleLogger.printMessage(
+    //   `This command was called with [${appName}] and options: ${options} but this is just a placeholder`
+    // );
   });
 
 /**
