@@ -81,7 +81,7 @@ When the command runs, the necessary files will be created. Once that is done, y
 * Copy and paste the path in the list of `urlpatterns` 
 
 ```shell
-### Example output
+### Example output assuming <controller_name> is 'demoapp'
  D.I.R.T CLI Controller Created
 
  Update your main urls.py file as follows
@@ -92,11 +92,11 @@ When the command runs, the necessary files will be created. Once that is done, y
 
  2. Add this entry to urlpatterns
 
- path('demoapp9/', include('demoapp9.urls')),
+ path('demoapp/', include('demoapp.urls')),
 
  3. Navigate to the newly-created controller
 
- http://127.0.0.1:8000/demoapp9/
+ http://127.0.0.1:8000/demoapp/
 ```
 
 #### Technical Stuff
